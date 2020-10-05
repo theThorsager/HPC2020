@@ -20,6 +20,17 @@ main(
     printf("Failed to open file: ./cells");
     return -1;
   }
+
+  int count_lines;
+  
+  char chr = getc(file);
+  while(chr !=EOF){
+    if(chr == 'n'){
+      count_lines+=1;
+    }
+    chr=getc(file);
+
+  }
   
   // read command line arg -t(num)$
   int threads = 5;
