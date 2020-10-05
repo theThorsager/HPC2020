@@ -21,15 +21,14 @@ main(
     return -1;
   }
 
-  int count_lines;
+  int count_lines = 0;
   
   char chr = getc(file);
-  while(chr !=EOF){
-    if(chr == 'n'){
-      count_lines+=1;
+  while(chr != EOF){
+    if(chr == '\n'){
+      ++count_lines;
     }
-    chr=getc(file);
-
+    chr = getc(file);
   }
   
   // read command line arg -t(num)$
@@ -51,14 +50,18 @@ main(
   short* A = (short*) malloc(sizeof(short) * blockS * 2);
   short* B = A + blockS;
 
+
+
+  
   // read the size of the file % blockS
-  size_t Csize = (1<<12)*3;   // the remainder
-  size_t numBlocks = 6; // amount of full blocks
+  size_t Csize = (count_lines % blockS) * 3;   // the remainder
+  size_t numBlocks = count_lines / blockS; // amount of full blocks
   
   // initial read of A, as the C size
   // A = Read(at = 0, size = Csize);
 
-
+  //printf("%d, %d, count_lines: %d \n", Csize, numBlocks, count_lines);
+  //return 0;
   
   // Treat special case C
 #pragma omp parallel for shared(A) reduction(+:output[:numOutput])
