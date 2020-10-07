@@ -201,5 +201,5 @@ short distance(short* pointA, short* pointB)
   dist = (int)pointA[2] - (int)pointB[2];
   sqDist += dist * dist;
   
-  return (short)(sqrtf((float)(sqDist)) + 0.5f) / 10.f;
+  return (short)((sqrtf((float)(sqDist))) / 10.f);
 }
