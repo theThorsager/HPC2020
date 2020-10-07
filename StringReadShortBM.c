@@ -25,7 +25,7 @@ myAtoi(char* str, short* A, short ASize)
     }
 
 }
-
+/*
 int
 main(int argc, char* argv[])
 {
@@ -47,3 +47,4 @@ main(int argc, char* argv[])
   
 }
 
+*/

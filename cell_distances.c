@@ -4,8 +4,22 @@
 #include <math.h>
 
 short distance(short* pointA, short* pointB);
- 
-const size_t numOutput = 3466;  // 20*sqrt(3) * 100
+void parse_file(FILE *file, char *fileread, int block_nr, int points_in_block);
+void myAtoi(char* str, short* A, short ASize);
+
+void Read(FILE *file, short* Block, size_t at, size_t blockSize)
+{
+  char* str = malloc(sizeof(char) * 24 * blockSize / 3);
+  
+  parse_file(file, str, at, blockSize / 3);
+
+  myAtoi(str, Block, blockSize);
+
+  free(str);
+}
+
+
+const size_t numOutput = 34669;  // 20*sqrt(3) * 100
 
 int
 main(
@@ -58,13 +72,19 @@ main(
   size_t numBlocks = count_lines / blockS; // amount of full blocks
   
   // initial read of A, as the C size
-  // A = Read(at = 0, size = Csize);
+  Read(file, A, 0, Csize);
+  /*
+  printf("%d, %d, count_lines: %d \n", Csize, numBlocks, count_lines);
 
-  //printf("%d, %d, count_lines: %d \n", Csize, numBlocks, count_lines);
-  //return 0;
+  for (size_t ix = 0; ix < Csize; ix += 3)
+    printf("{%d, %d, %d}\n", A[ix], A[ix+1], A[ix+2]);
+
+  printf("%d\n", output[0]);
   
+  return 0;
+  */
   // Treat special case C
-#pragma omp parallel for shared(A) reduction(+:output[:numOutput])
+  //#pragma omp parallel for shared(A) reduction(+:output[:numOutput])
   for (size_t ix = 0; ix < Csize - 3; ix += 3)
   {
     for (size_t jx = ix + 3; jx < Csize; jx += 3)
@@ -77,10 +97,10 @@ main(
   for (size_t ib = 0; ib < numBlocks; ++ib)
   {
     // NextB
-    // B = Read(at = Csize + ib*blockS, size = blockS)
+    Read(file, B, ib * blockS, blockS);
 
     // Check A against everything in B
-    #pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
+    //    #pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
     for (size_t ix = 0; ix < Csize; ix += 3)
     {
       for (size_t jx = 0; jx < blockS; jx += 3)
@@ -95,10 +115,10 @@ main(
   for (size_t ia = 0; ia < numBlocks; ++ia)
   {
     // NextA
-    // A = Read(at = Csize + ia*blockS, size = blockS)
+    Read(file, A, Csize + ia * blockS, blockS);
      
     // Check A against itself
-    #pragma omp parallel for shared(A) reduction(+:output[:numOutput])
+    //#pragma omp parallel for shared(A) reduction(+:output[:numOutput])
     for (size_t ix = 0; ix < blockS - 3; ix += 3)
     {
       for (size_t jx = ix + 3; jx < blockS; jx += 3)
@@ -111,10 +131,10 @@ main(
     for (size_t ib = ia + 1; ib < numBlocks; ++ib)
     {
       // NextB
-      // B = Read(at = Csize + ib*blockS, size = blockS)
-
+      Read(file, B, Csize + ib * blockS, blockS);
+      
       // Check A against everything in B
-      #pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
+      //#pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
       for (size_t ix = 0; ix < blockS; ix += 3)
       {
 	for (size_t jx = 0; jx < blockS; jx += 3)
@@ -132,8 +152,9 @@ main(
   // Output the output
   for (size_t ix = 0; ix < numOutput; ++ix)
   {
-    // do better with parser    
-    printf("%f %d\n", ((float)ix) / 100.f, output[ix]);
+    // do better with parser
+    if (output[ix] != 0)
+      printf("%f %d\n", ((float)ix) / 1000.f, output[ix]);
   }
 }
 /*
@@ -153,14 +174,14 @@ short distance(short* pointA, short* pointB)
 */
 short distance(short* pointA, short* pointB)
 {
-  short dist = pointA[0] - pointB[0];
-  short sqDist = dist * dist;
-
-  dist = pointA[1] - pointB[1];
+  int dist = (int)pointA[0] - (int)pointB[0];
+  int sqDist = dist * dist;
+    
+  dist = (int)pointA[1] - (int)pointB[1];
   sqDist += dist * dist;
-
-  dist = pointA[2] - pointB[2];
+  
+  dist = (int)pointA[2] - (int)pointB[2];
   sqDist += dist * dist;
-
+  
   return (short)sqrtf((float)(sqDist));
 }
