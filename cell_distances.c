@@ -7,11 +7,11 @@ short distance(short* pointA, short* pointB);
 
 void Read(FILE *file, short* Block, size_t at, size_t blockSize)
 {
-  char* str = malloc(sizeof(char) * 24 * blockSize);
+  char* str = malloc(sizeof(char) * 8 * blockSize);
   
   // parse_file(file, str, at, blockSize);
-  fseek(file, 24*at*blockSize,SEEK_SET);
-  fread(str, sizeof(char),blockSize*24,file);
+  fseek(file, 8*at,SEEK_SET);
+  fread(str, sizeof(char),blockSize*8,file);
   
   // myAtoi(str, Block, blockSize);
 
@@ -72,7 +72,7 @@ main(
     output[ix] = 0;
 
   // allocate memory
-  size_t linesPerBlock = (1<<10);  //check
+  size_t linesPerBlock = (1<<12);  //check
   size_t blockS = linesPerBlock * 3; 
   short* A = (short*) malloc(sizeof(short) * blockS * 2);
   short* B = A + blockS;
@@ -81,11 +81,11 @@ main(
   // printf("Gucci\n");
   
   // read the size of the file % blockS
-  size_t Csize = (count_lines % blockS) * 3;   // the remainder
-  size_t numBlocks = count_lines / blockS; // amount of full blocks
+  size_t Csize = (count_lines % linesPerBlock) * 3;   // the remainder
+  size_t numBlocks = count_lines / linesPerBlock; // amount of full blocks
   
   // initial read of A, as the C size
-  Read(file, A, 0, Csize / 3);
+  Read(file, A, 0, Csize);
 
   /*
   printf("%d, %d, count_lines: %d \n", Csize, numBlocks, count_lines);
@@ -112,7 +112,7 @@ main(
   for (size_t ib = 0; ib < numBlocks; ++ib)
   {
     // NextB
-    Read(file, B, ib * blockS, linesPerBlock);
+    Read(file, B, Csize + ib * blockS, blockS);
 
     // Check A against everything in B
     #pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
@@ -130,7 +130,7 @@ main(
   for (size_t ia = 0; ia < numBlocks; ++ia)
   {
     // NextA
-    Read(file, A, Csize + ia * blockS, linesPerBlock);
+    Read(file, A, Csize + ia * blockS, blockS);
      
     // Check A against itself
     #pragma omp parallel for shared(A) reduction(+:output[:numOutput])
@@ -146,7 +146,7 @@ main(
     for (size_t ib = ia + 1; ib < numBlocks; ++ib)
     {
       // NextB
-      Read(file, B, Csize + ib * blockS, linesPerBlock);
+      Read(file, B, Csize + ib * blockS, blockS);
       
       // Check A against everything in B
       #pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
@@ -164,7 +164,7 @@ main(
   
 
   // free(A);
-
+  
   // Output the output
   for (size_t ix = 0; ix < numOutput; ++ix)
   {
