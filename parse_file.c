@@ -14,7 +14,7 @@ void parse_file(FILE *file, char *fileread, int block_nr, int points_in_block){
   fread(fileread, sizeof(char)*points_in_block*24,points_in_block*24,file);
   }
 
-
+/*
 int main(int argc,char* argv[]){
   int points_in_block=1;
 
@@ -33,3 +33,4 @@ int main(int argc,char* argv[]){
 
 
 }
+*/
