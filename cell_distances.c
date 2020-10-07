@@ -5,16 +5,18 @@
 
 short distance(short* pointA, short* pointB);
 
+// The max memory for this program is 12 * blocksize + 4 * numberOfOutputs
+// = 12 * 2^13 + 4 * 3466 = 112 168 bytes < 1064^3
+
 void Read(FILE *file, short* Block, size_t at, size_t blockSize)
 {
+  // this method is never run in parallel, so this allocation only happens once.
+  // 8 * 2^13
   char* str = malloc(sizeof(char) * 8 * blockSize);
   
-  // parse_file(file, str, at, blockSize);
   fseek(file, 8*at,SEEK_SET);
   fread(str, sizeof(char),blockSize*8,file);
   
-  // myAtoi(str, Block, blockSize);
-
 #pragma omp parallel for shared(Block, str)
   for ( size_t i = 0; i < blockSize; ++i )
   {
@@ -67,16 +69,17 @@ main(
   omp_set_num_threads(threads);
   
   // output array, index is distance * 100, and the value is the amount of distances
+  // 8 * 3466
   int output[numOutput];
   for (size_t ix = 0; ix < numOutput; ++ix)
     output[ix] = 0;
 
   // allocate memory
-  size_t linesPerBlock = (1<<12);  //check
+  // 2 * 2 * 2^13
+  size_t linesPerBlock = (1<<13);  //check
   size_t blockS = linesPerBlock * 3; 
   short* A = (short*) malloc(sizeof(short) * blockS * 2);
   short* B = A + blockS;
-
 
   // printf("Gucci\n");
   
@@ -155,41 +158,22 @@ main(
 	for (size_t jx = 0; jx < blockS; jx += 3)
 	{
 	  short dist = distance(A + ix, B + jx);
-	  // unroll, seems like comparing and adding 3 to jx is taking time, maybe, data dependency
 	  ++output[dist];
 	}
       }
     }    
   }  
-  
-
-  // free(A);
-  
+    
   // Output the output
   for (size_t ix = 0; ix < numOutput; ++ix)
   {
-    // do better with parser
     // if (output[ix] != 0)
       printf("%05.2f %d\n", ((float)ix) / 100.f, output[ix]);
   }
 
   free(A);
 }
-/*
-short distance(short* pointA, short* pointB)
-{
-  short distX = pointA[0] - pointB[0];
-  short sqDistX = distX * distX;
 
-  short distY = pointA[1] - pointB[1];
-  short sqDistY = distY * distY;
-
-  short distZ = pointA[2] - pointB[2];
-  short sqDistZ = distZ * distZ;
-
-  return (short)sqrtf((float)(sqDistX+sqDistY+sqDistZ));
-  }
-*/
 short distance(short* pointA, short* pointB)
 {
   int dist = (int)pointA[0] - (int)pointB[0];
