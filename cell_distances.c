@@ -19,7 +19,7 @@ void Read(FILE *file, short* Block, size_t at, size_t blockSize)
 }
 
 
-const size_t numOutput = 34669;  // 20*sqrt(3) * 100
+const size_t numOutput = 3466;  // 20*sqrt(3) * 100
 
 int
 main(
@@ -65,7 +65,7 @@ main(
   short* B = A + blockS;
 
 
-
+  // printf("Gucci\n");
   
   // read the size of the file % blockS
   size_t Csize = (count_lines % blockS) * 3;   // the remainder
@@ -73,6 +73,7 @@ main(
   
   // initial read of A, as the C size
   Read(file, A, 0, Csize);
+
   /*
   printf("%d, %d, count_lines: %d \n", Csize, numBlocks, count_lines);
 
@@ -82,7 +83,8 @@ main(
   printf("%d\n", output[0]);
   
   return 0;
-  */
+  */  
+
   // Treat special case C
   //#pragma omp parallel for shared(A) reduction(+:output[:numOutput])
   for (size_t ix = 0; ix < Csize - 3; ix += 3)
@@ -146,16 +148,19 @@ main(
       }
     }    
   }  
-
-  free(A);
   
+
+  // free(A);
+
   // Output the output
   for (size_t ix = 0; ix < numOutput; ++ix)
   {
     // do better with parser
     if (output[ix] != 0)
-      printf("%f %d\n", ((float)ix) / 1000.f, output[ix]);
+      printf("%.2f %d\n", ((float)ix) / 100.f, output[ix]);
   }
+
+  free(A);
 }
 /*
 short distance(short* pointA, short* pointB)
@@ -183,5 +188,5 @@ short distance(short* pointA, short* pointB)
   dist = (int)pointA[2] - (int)pointB[2];
   sqDist += dist * dist;
   
-  return (short)sqrtf((float)(sqDist));
+  return (short)(sqrtf((float)(sqDist)) + 0.5f) / 10.f;
 }
