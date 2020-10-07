@@ -1,1 +1,4 @@
+*.py
 .data
+cell_consistency
+cell_consistency.c~
