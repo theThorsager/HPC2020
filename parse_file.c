@@ -11,7 +11,7 @@ struct coord{
   
 void parse_file(FILE *file, char *fileread, int block_nr, int points_in_block){
   fseek(file, 24*block_nr*points_in_block,SEEK_SET);
-  fread(fileread, sizeof(char)*points_in_block*24,points_in_block*24,file);
+  fread(fileread, sizeof(char),points_in_block*24,file);
   }
 
 /*

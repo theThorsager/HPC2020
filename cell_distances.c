@@ -9,10 +9,14 @@ void myAtoi(char* str, short* A, short ASize);
 
 void Read(FILE *file, short* Block, size_t at, size_t blockSize)
 {
-  char* str = malloc(sizeof(char) * 24 * blockSize / 3);
+  char* str = malloc(sizeof(char) * 24 * blockSize);
   
-  parse_file(file, str, at, blockSize / 3);
+  parse_file(file, str, at, blockSize);
 
+  /*
+  fseek(file, 24*block_nr*points_in_block,SEEK_SET);
+  fread(fileread, sizeof(char),points_in_block*24,file);
+  */
   myAtoi(str, Block, blockSize);
 
   free(str);
@@ -46,7 +50,7 @@ main(
   }
   
   // read command line arg -t(num)$
-  int threads = 5;
+  int threads = 1;
   if (argc >= 2 && argv[1][0] == '-' && argv[1][1] == 't')
     threads = atoi(argv[1] + 2);
 
@@ -60,7 +64,8 @@ main(
     output[ix] = 0;
 
   // allocate memory
-  size_t blockS = (1<<14) * 3; //check
+  size_t linesPerBlock = (1<<10);  //check
+  size_t blockS = linesPerBlock * 3; 
   short* A = (short*) malloc(sizeof(short) * blockS * 2);
   short* B = A + blockS;
 
@@ -72,7 +77,7 @@ main(
   size_t numBlocks = count_lines / blockS; // amount of full blocks
   
   // initial read of A, as the C size
-  Read(file, A, 0, Csize);
+  Read(file, A, 0, Csize / 3);
 
   /*
   printf("%d, %d, count_lines: %d \n", Csize, numBlocks, count_lines);
@@ -86,7 +91,7 @@ main(
   */  
 
   // Treat special case C
-  //#pragma omp parallel for shared(A) reduction(+:output[:numOutput])
+  #pragma omp parallel for shared(A) reduction(+:output[:numOutput])
   for (size_t ix = 0; ix < Csize - 3; ix += 3)
   {
     for (size_t jx = ix + 3; jx < Csize; jx += 3)
@@ -99,10 +104,10 @@ main(
   for (size_t ib = 0; ib < numBlocks; ++ib)
   {
     // NextB
-    Read(file, B, ib * blockS, blockS);
+    Read(file, B, ib * blockS, linesPerBlock);
 
     // Check A against everything in B
-    //    #pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
+    #pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
     for (size_t ix = 0; ix < Csize; ix += 3)
     {
       for (size_t jx = 0; jx < blockS; jx += 3)
@@ -117,10 +122,10 @@ main(
   for (size_t ia = 0; ia < numBlocks; ++ia)
   {
     // NextA
-    Read(file, A, Csize + ia * blockS, blockS);
+    Read(file, A, Csize + ia * blockS, linesPerBlock);
      
     // Check A against itself
-    //#pragma omp parallel for shared(A) reduction(+:output[:numOutput])
+    #pragma omp parallel for shared(A) reduction(+:output[:numOutput])
     for (size_t ix = 0; ix < blockS - 3; ix += 3)
     {
       for (size_t jx = ix + 3; jx < blockS; jx += 3)
@@ -133,10 +138,10 @@ main(
     for (size_t ib = ia + 1; ib < numBlocks; ++ib)
     {
       // NextB
-      Read(file, B, Csize + ib * blockS, blockS);
+      Read(file, B, Csize + ib * blockS, linesPerBlock);
       
       // Check A against everything in B
-      //#pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
+      #pragma omp parallel for shared(A,B) reduction(+:output[:numOutput])
       for (size_t ix = 0; ix < blockS; ix += 3)
       {
 	for (size_t jx = 0; jx < blockS; jx += 3)
@@ -156,8 +161,8 @@ main(
   for (size_t ix = 0; ix < numOutput; ++ix)
   {
     // do better with parser
-    if (output[ix] != 0)
-      printf("%.2f %d\n", ((float)ix) / 100.f, output[ix]);
+    // if (output[ix] != 0)
+      printf("%05.2f %d\n", ((float)ix) / 100.f, output[ix]);
   }
 
   free(A);
