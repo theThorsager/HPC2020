@@ -13,3 +13,6 @@ cell_distances : cell_distances.c
 .PHONY : clean
 clean :
 	rm -rf $(BINS)
+
+submission.tgz: *
+	tar czf submit.tar.gz cell_distances.c makefile parse_file.c stringReadShortBM.c
