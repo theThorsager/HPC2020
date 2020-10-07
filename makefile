@@ -14,5 +14,5 @@ cell_distances : cell_distances.c
 clean :
 	rm -rf $(BINS)
 
-submit.tgz: *
-	tar czf submit.tar.gz cell_distances.c makefile parse_file.c stringReadShortBM.c
+submission: *
+	tar czf submit.tar.gz cell_distances.c makefile parse_file.c StringReadShortBM.c
