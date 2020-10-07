@@ -6,7 +6,7 @@ CFLAGS = -O2 -lm -fopenmp -g
 all : $(BINS)
 
 cell_distances : cell_distances.c
-	$(CC) -o $@ $< $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 
 
@@ -15,4 +15,4 @@ clean :
 	rm -rf $(BINS)
 
 submission: *
-	tar czf submit.tar.gz cell_distances.c makefile parse_file.c StringReadShortBM.c
+	tar czf submit.tar.gz cell_distances.c makefile

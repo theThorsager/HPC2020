@@ -4,24 +4,32 @@
 #include <math.h>
 
 short distance(short* pointA, short* pointB);
-void parse_file(FILE *file, char *fileread, int block_nr, int points_in_block);
-void myAtoi(char* str, short* A, short ASize);
 
 void Read(FILE *file, short* Block, size_t at, size_t blockSize)
 {
   char* str = malloc(sizeof(char) * 24 * blockSize);
   
-  parse_file(file, str, at, blockSize);
+  // parse_file(file, str, at, blockSize);
+  fseek(file, 24*at*blockSize,SEEK_SET);
+  fread(str, sizeof(char),blockSize*24,file);
+  
+  // myAtoi(str, Block, blockSize);
 
-  /*
-  fseek(file, 24*block_nr*points_in_block,SEEK_SET);
-  fread(fileread, sizeof(char),points_in_block*24,file);
-  */
-  myAtoi(str, Block, blockSize);
+#pragma omp parallel for shared(Block, str)
+  for ( size_t i = 0; i < blockSize; ++i )
+  {
+    Block[i]= 0 + (str[(i*8)+1] - '0') * 10000
+      + (str[(i*8)+2] - '0') * 1000
+      + (str[(i*8)+4] - '0') * 100
+      + (str[(i*8)+5] - '0') * 10
+      + (str[(i*8)+6] - '0');
 
+    if(str[i*8] == '-')
+      Block[i] *= -1;
+  }
+  
   free(str);
 }
-
 
 const size_t numOutput = 3466;  // 20*sqrt(3) * 100
 
