@@ -70,7 +70,7 @@ main(
   
   // output array, index is distance * 100, and the value is the amount of distances
   // 8 * 3466
-  int output[numOutput];
+  unsigned long int output[numOutput];
   for (size_t ix = 0; ix < numOutput; ++ix)
     output[ix] = 0;
 
