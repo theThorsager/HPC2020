@@ -8,6 +8,9 @@ all : $(BINS)
 newton : newton.c
 	$(CC) -o $@ $^ $(CFLAGS)
 
+newtonPoint : newtonPoint.c
+	$(CC) -o $@ $^ $(CFLAGS)
+
 
 .PHONY : clean
 clean :
