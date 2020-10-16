@@ -11,6 +11,7 @@
 #define Tol_MAX 10000000000.
 #define VALUE 0
 #define DEFAULT_VALUE -1 // 0 ?
+#define CAP 50
 
 int
 PreCalcRoots(
@@ -45,10 +46,11 @@ NewtonPoint(
   ITER_T conv;
   ATT_T attr;
 
-  for ( conv = 0, attr = DEFAULT_VALUE; conv <= 50; ++conv ) {
+  for ( conv = 0, attr = DEFAULT_VALUE; conv <= CAP; ++conv ) {
     TYPE sqNorm = a_r*a_r + a_i*a_i;
     
-    if ( sqNorm > Tol_MAX * Tol_MAX ) { // Check upper bound
+    if ( a_r > TOL_MAX || a_r < -TOL_MAX ||
+	 a_i > TOL_MAX || a_i < -TOL_MAX ) { // Check upper bound
       attr = VALUE;
       break;
     } else if ( sqNorm < Tol_MIN * Tol_MIN ) { // Check lower bound
