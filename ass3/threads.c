@@ -60,20 +60,24 @@ main_thrd(
     int *loc_iterations=(int*) malloc(sz*sizeof(int));
     for ( int jx = 0; jx < sz; ++jx )
       //wix[jx] = sqrtf(vix[jx]);
-      loc_root[ix]=ix;
+      //Newtonpoint(ix,jx,...)
+      loc_root[jx]=ix;
+
     mtx_lock(mtx);
     root[ix] = loc_root;
-    status[tx].val = ix + istep;
+    iterations[ix]=loc_iterations;
+    status[tx].val = ix;
+    printf("Thread %i: %i\n",tx,status[tx].val);
+    printf("Thread %i don with line %i\n",tx, ix);
     mtx_unlock(mtx);
     cnd_signal(cnd);
+   
 
     // In order to illustrate thrd_sleep and to force more synchronization
     // points, we sleep after each line for one micro seconds.
-    thrd_sleep(&(struct timespec){.tv_sec=0, .tv_nsec=1000}, NULL);
-    free(loc_root);
-    free(loc_iterations);
+    thrd_sleep(&(struct timespec){.tv_sec=0, .tv_nsec=10000}, NULL);
+   
   }
-  
 
   return 0;
 }
@@ -148,28 +152,22 @@ main(int argc, char* argv[])
 {
   
   //Parse command line args
-  char arg1[20];
-  char arg2[20];
-
-
-  strcpy(arg1,argv[1]);
-  strcpy(arg2,argv[2]);
 
   int nthrds;
   int sz;
   
   if(argv[1][1]=='t'){
-    nthrds=atoi(arg1+2);
-    sz=atoi(arg2+2);
+    nthrds=atoi(argv[1]+2);
+    sz=atoi(argv[2]+2);
   }else if(argv[2][1]=='t'){
-    nthrds=atoi(arg2+2);
-    sz=atoi(arg1+2);
+    nthrds=atoi(argv[2]+2);
+    sz=atoi(argv[1]+2);
   }else{
-    printf("Erroer parsin cmd line args\n");
+    printf("Error parsin cmd line args\n");
     return -1;
   }
 
-  printf("%i,%i",nthrds,sz);
+  printf("%i,%i\n",nthrds,sz);
 
   int degree=atoi(argv[3]);
 
@@ -193,8 +191,8 @@ main(int argc, char* argv[])
   }
   for(int ix=0;ix<sz;++ix){
     for(int jx=0;jx<sz;++jx){
-      re_matrix[jx][ix]=-2+ix*gap;
-      im_matrix[ix][jx]=2-ix*gap;
+      re_matrix[ix][jx]=-2+ix*gap;
+      im_matrix[jx][ix]=2-ix*gap;
     }
   }
   
@@ -231,7 +229,7 @@ main(int argc, char* argv[])
     thrds_info[tx].mtx = &mtx;
     thrds_info[tx].cnd = &cnd;
     thrds_info[tx].status = status;
-    status[tx].val = -1;
+    status[tx].val = 0;
 
     int r = thrd_create(thrds+tx, main_thrd, (void*) (thrds_info+tx));
     if ( r != thrd_success ) {
@@ -266,11 +264,21 @@ main(int argc, char* argv[])
       exit(1);
     }
   }
-  free(re_matrix);
+
+  {
+    int r;
+    thrd_join(thrd_check, &r);
+
+  }free(re_matrix);
   free(im_matrix);
   free(re_entries);
   free(im_entries);
   free(root);
   free(iterations);
-  
+
+
+  mtx_destroy(&mtx);
+  cnd_destroy(&cnd);
+
+  return 0;
 }
