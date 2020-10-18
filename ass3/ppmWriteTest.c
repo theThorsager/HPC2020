@@ -1,87 +1,109 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-//storing write data on stack and writing all data at once -> stack overflow
 //storing write data on heap and writing all data at once 
-void WritePPM2(  int d,
-		 int size,
+void WritePPM2(  int size,
+		 int* a_attr,
+		 char* AllAttrColours,
+		 FILE* fpc,
 		 int* a_conv,
-		 int* AllConvColours,
-		 int* a_iter,
-		 int* AllIterColours,
-		 int ppmDim
+		 char* AllConvColours,
+		 FILE* fpi,
+		 int Colours[10][3]
 		 );
 
 int main(int argc, char* argv[])
 {
-  
-  int d = 7;
-  int size = 100000;//testar med en miljon
 
+  int d = 7;
   
+  // Andreas Naming thing (remove since already exists)
+  char fpc_name[30];
+  char fpa_name[30];
+
+  snprintf(fpc_name,sizeof(fpc_name),"newton_convergence_x%d.ppm",d);
+  snprintf(fpa_name,sizeof(fpa_name),"newton_attractors_x%d.ppm",d); 
+  //
+  
+  int size = 100000;
+  int ppmDim = size;
+
+  //making colour matrix to pick from in the write function
+  int Colours[10][3] = {{2, 0, 0}, {2, 1, 0}, {2, 2, 0},
+			{1, 2, 0}, {0, 2, 0}, {0, 2, 1},
+			{0, 2, 2}, {0, 1, 2}, {0, 0, 2},
+			{1, 0, 2}};
+  
+  //Create template file Attraction
+  FILE* fpa = fopen(fpa_name, "w");
+  fprintf(fpa, "P3\n%d %d\n%d\n", ppmDim, ppmDim, 2);
+
+  //Create template file Convergence
+  FILE* fpc = fopen(fpc_name, "w");
+  fprintf(fpc, "P3\n%d %d\n%d\n", ppmDim, ppmDim, 50);
+
   // making test convergence matrix full of zeros
-  int * a_conv = (int*) calloc(size, sizeof(int));
+  int* a_attr = (int*) calloc(size, sizeof(int));
+  int* a_conv= (int*) calloc(size, sizeof(int));
 
   //matrix to fill with colours
-  int * AllConvColours = (int*) malloc(sizeof(int) * size * 3);
-  int * AllIterColours = (int*) malloc(sizeof(int) * size * 3);
-
+  char* AllAttrColours = malloc(sizeof(char) * size * 3 * 2);
+  char* AllConvColours = malloc(sizeof(char) * size * 3 * 3);
   
-  WritePPM2(d, size, a_conv, AllConvColours, a_conv, AllIterColours, size);
- 
+  WritePPM2(size, a_attr, AllAttrColours, fpa, a_conv, AllConvColours, fpc, Colours);
+  
+  free(a_attr);
   free(a_conv);
+  free(AllAttrColours);
+  free(AllConvColours);
+
+  fclose(fpa);
+  fclose(fpc);
   
   return 0;
 }
 
 
-void WritePPM2(  int d,
-		 int size,
+void WritePPM2(  int size,
+		 int* a_attr,
+		 char* AllAttrColours,
+		 FILE* fpa,
 		 int* a_conv,
-		 int* AllConvColours,
-		 int* a_iter,
-		 int* AllIterColours,
-		 int ppmDim
+		 char* AllConvColours,
+		 FILE* fpc,
+		 int Colours[10][3]
 		 )
 {
-
-  int MaxConvColour = d; // assumes member index matrix
-  int MaxIterColour = 50; // given
+  size_t ja=0;
+  size_t jc=0;
   
-  //Create template file Convergernce roots
-  FILE *fpc = fopen("convPic.ppm", "wb"); /* b - binary mode */
-  fprintf(fpc, "P3\n%d %d\n%d\n", ppmDim, ppmDim, MaxConvColour);
-
-  //Create template file iterations
-  FILE *fpi = fopen("iterationPic.ppm", "wb"); /* b - binary mode */
-  fprintf(fpi, "P3\n%d %d\n%d\n", ppmDim, ppmDim, MaxIterColour);
-
-  //Writing to file once
-  //int AllConvColours[size*3];
-  //int AllIterColours[size*3]; -> Stack overflow
-
-  //int * AllConvColours = (int*) malloc(sizeof(int) * size * 3);
-  //int * AllIterColours = (int*) malloc(sizeof(int) * size * 3);
-
-  size_t j=0;
   for ( size_t i = 0; i < size; ++i )
 	{
+	  int k = a_attr[i]; 
+	  AllAttrColours[ja] = Colours[k][0] + 48;
+	  AllAttrColours[ja+1] = ' ';
+	  AllAttrColours[ja+2] = Colours[k][1] + 48;
+	  AllAttrColours[ja+3] = ' ';
+	  AllAttrColours[ja+4] = Colours[k][2] + 48;
+	  AllAttrColours[ja+5] = ' ';
+	  /*
+	  AllConvColours[j] = a_conv[i];
+	  AllConvColours[j] = a_conv[i];
 	  AllConvColours[j] = a_conv[i];
 	  AllConvColours[j+1] = a_conv[i];
+	  AllConvColours[j+1] = a_conv[i];
+	  AllConvColours[j+1] = a_conv[i];
 	  AllConvColours[j+2] = a_conv[i];
-
-	  AllIterColours[j] = a_iter[i];
-	  AllIterColours[j+1] = a_iter[i];
-	  AllIterColours[j+2] = a_iter[i];
-	  j+=3;
+	  AllConvColours[j+2] = a_conv[i];
+	  AllConvColours[j+2] = a_conv[i];
+	  */
+	  
+	  ja+=6;
 	}
-  fwrite(AllConvColours, sizeof(int), size*3, fpc);
-  fwrite(AllIterColours, sizeof(int), size*3, fpi);
-
-  //free(AllIterColours);
-  //free(AllConvColours);
   
-  fclose(fpc);
-  fclose(fpi);
 
+  
+  fwrite(AllAttrColours, sizeof(char), size*3*2, fpa);
+  fwrite(AllConvColours, sizeof(char), size*3*3, fpc);
+ 
 }
