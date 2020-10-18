@@ -1,6 +1,6 @@
 CC = gcc
 BINS = newton
-CFLAGS = -O2 -lm -g
+CFLAGS = -O2 -lm -g -lpthread
 
 .PHONY : all
 all : $(BINS)
