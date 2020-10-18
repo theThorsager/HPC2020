@@ -79,7 +79,7 @@ void WritePPM2(	 int size,
 		 int* a_conv,
 		 char* AllConvColours,
 		 FILE *fpc,
-		 int Colours[10][23]
+		 int Colours[10][3]
 		 );
 
 int
@@ -153,8 +153,8 @@ main_thrd_check(
 
   const float eps = 1e-1;
   
-  int *rgb_attr = (int*) malloc(3*sz*sizeof(int));
-  int *rgb_iter = (int*) malloc(3*sz*sizeof(int));
+  char *rgb_attr =  malloc(2*3*sz*sizeof(char));
+  char *rgb_iter =  malloc(3*3*sz*sizeof(char));
 
   char fpi_name[30];
   char fpc_name[30];
@@ -171,6 +171,11 @@ main_thrd_check(
   fprintf(fpc, "P3\n%d %d\n%d\n", sz, sz, degree);
   fprintf(fpi, "P3\n%d %d\n%d\n", sz, sz, 50);
 
+   //making colour matrix to pick from in the write function
+  int Colours[10][3] = {{2, 0, 0}, {2, 1, 0}, {2, 2, 0},
+			{1, 2, 0}, {0, 2, 0}, {0, 2, 1},
+			{0, 2, 2}, {0, 1, 2}, {0, 0, 2},
+			{1, 0, 2}};
   
   // We do not increment ix in this loop, but in the inner one.
   for ( int ix = 0, ibnd; ix < sz; ) {
@@ -198,7 +203,7 @@ main_thrd_check(
     // We do not initialize ix in this loop, but in the outer one.
     for ( ; ix < ibnd; ++ix ) {
      
-      WritePPM2(degree, sz, root[ix],rgb_attr, iterations[ix],rgb_iter, fpc, fpi);
+      WritePPM2(sz, root[ix],rgb_attr, fpc,iterations[ix],rgb_iter, fpi,Colours);
       free(root[ix]);
       free(iterations[ix]);
     }
@@ -584,19 +589,23 @@ void WritePPM2(  int size,
 	  AllAttrColours[ja+3] = ' ';
 	  AllAttrColours[ja+4] = Colours[k][2] + 48;
 	  AllAttrColours[ja+5] = ' ';
-	  /*
-	  AllConvColours[j] = a_conv[i];
-	  AllConvColours[j] = a_conv[i];
-	  AllConvColours[j] = a_conv[i];
-	  AllConvColours[j+1] = a_conv[i];
-	  AllConvColours[j+1] = a_conv[i];
-	  AllConvColours[j+1] = a_conv[i];
-	  AllConvColours[j+2] = a_conv[i];
-	  AllConvColours[j+2] = a_conv[i];
-	  AllConvColours[j+2] = a_conv[i];
-	  */
+
+
+	  
+	  short ten = (a_conv[i] / 10) +48;
+	  short one = (a_conv[i] % 10) +48;
+	  AllConvColours[jc]   = ten;
+	  AllConvColours[jc+1] = one;
+	  AllConvColours[jc+2] = ' ';
+	  AllConvColours[jc+3] = ten;
+	  AllConvColours[jc+4] = one;
+	  AllConvColours[jc+5] = ' ';
+	  AllConvColours[jc+6] = ten;
+	  AllConvColours[jc+7] = one;
+	  AllConvColours[jc+8] = ' ';
 	  
 	  ja+=6;
+	  jc+=9;
 	}
   
 
