@@ -167,10 +167,11 @@ main_thrd_check(
   
   fprintf(fpc, "P3\n%d %d\n%d\n", sz, sz, degree);
   fprintf(fpi, "P3\n%d %d\n%d\n", sz, sz, 50);
- 
+
+  
   // We do not increment ix in this loop, but in the inner one.
   for ( int ix = 0, ibnd; ix < sz; ) {
-
+   
     // If no new lines are available, we wait.
     for ( mtx_lock(mtx); ; ) {
       // We extract the minimum of all status variables.
@@ -193,6 +194,7 @@ main_thrd_check(
 
     // We do not initialize ix in this loop, but in the outer one.
     for ( ; ix < ibnd; ++ix ) {
+     
       WritePPM2(degree, sz, root[ix],rgb_attr, iterations[ix],rgb_iter, fpc, fpi);
       free(root[ix]);
       free(iterations[ix]);
@@ -200,7 +202,7 @@ main_thrd_check(
 
      
   }
-  
+
   free(rgb_attr);
   free(rgb_iter);
 
@@ -577,9 +579,24 @@ void WritePPM2(  int d,
 
 	  AllIterColours[j] = a_iter[i];
 	  AllIterColours[j+1] = a_iter[i];
+
 	  AllIterColours[j+2] = a_iter[i];
 	}
-  fwrite(AllConvColours, sizeof(int), size*3, fpc);
-  fwrite(AllIterColours, sizeof(int), size*3, fpi);
+  //fwrite(AllConvColours, sizeof(int), size*3, fpc);
+  //fwrite(AllIterColours, sizeof(int), size*3, fpi);
+
+  for(int ix=0;ix<size*3;ix+=3){
+    fprintf(fpi,"%d %d %d  ", AllIterColours[ix],AllIterColours[ix+1],AllIterColours[ix+2]);
+    fprintf(fpc,"%d %d %d  ", AllConvColours[ix],AllConvColours[ix+1],AllConvColours[ix+2]);
+    if(ix%10==0){
+      fprintf(fpi, "\n");
+      fprintf(fpc,"\n");
+    }
+
+    
+  }
+
 
 }
+
+
