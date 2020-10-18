@@ -72,14 +72,14 @@ NewtonPoint(
 	    ATT_T* a);
 
 
-void WritePPM2(  int d,
-		 int size,
+void WritePPM2(	 int size,
+		 int* a_attr,
+		 char* AllAttrColours,
+		 FILE* fpa,
 		 int* a_conv,
-		 int* AllConvColours,
-		 int* a_iter,
-		 int* AllIterColours,
+		 char* AllConvColours,
 		 FILE *fpc,
-		 FILE *fpi
+		 int Colours[10][23]
 		 );
 
 int
@@ -554,49 +554,48 @@ NewtonPoint(
 }
 
 
-void WritePPM2(  int d,
-		 int size,
+
+void WritePPM2(  int size,
+		 int* a_attr,
+		 char* AllAttrColours,
+		 FILE* fpa,
 		 int* a_conv,
-		 int* AllConvColours,
-		 int* a_iter,
-		 int* AllIterColours,
-		 FILE *fpc,
-		 FILE *fpi
+		 char* AllConvColours,
+		 FILE* fpc,
+		 int Colours[10][3]
 		 )
 {
-
-  int MaxConvColour = d; // assumes member index matrix
-  int MaxIterColour = 50; // given
-  //fprintf(fpc, "P3\n%d %d\n%d\n", ppmDim, ppmDim, MaxConvColour);
-  //fprintf(fpi, "P3\n%d %d\n%d\n", ppmDim, ppmDim, MaxIterColour);
-
-  size_t j=0;
+  size_t ja=0;
+  size_t jc=0;
+  
   for ( size_t i = 0; i < size; ++i )
 	{
+	  int k = a_attr[i]; 
+	  AllAttrColours[ja] = Colours[k][0] + 48;
+	  AllAttrColours[ja+1] = ' ';
+	  AllAttrColours[ja+2] = Colours[k][1] + 48;
+	  AllAttrColours[ja+3] = ' ';
+	  AllAttrColours[ja+4] = Colours[k][2] + 48;
+	  AllAttrColours[ja+5] = ' ';
+	  /*
+	  AllConvColours[j] = a_conv[i];
+	  AllConvColours[j] = a_conv[i];
 	  AllConvColours[j] = a_conv[i];
 	  AllConvColours[j+1] = a_conv[i];
+	  AllConvColours[j+1] = a_conv[i];
+	  AllConvColours[j+1] = a_conv[i];
 	  AllConvColours[j+2] = a_conv[i];
-
-	  AllIterColours[j] = a_iter[i];
-	  AllIterColours[j+1] = a_iter[i];
-
-	  AllIterColours[j+2] = a_iter[i];
+	  AllConvColours[j+2] = a_conv[i];
+	  AllConvColours[j+2] = a_conv[i];
+	  */
+	  
+	  ja+=6;
 	}
-  //fwrite(AllConvColours, sizeof(int), size*3, fpc);
-  //fwrite(AllIterColours, sizeof(int), size*3, fpi);
+  
 
-  for(int ix=0;ix<size*3;ix+=3){
-    fprintf(fpi,"%d %d %d  ", AllIterColours[ix],AllIterColours[ix+1],AllIterColours[ix+2]);
-    fprintf(fpc,"%d %d %d  ", AllConvColours[ix],AllConvColours[ix+1],AllConvColours[ix+2]);
-    if(ix%10==0){
-      fprintf(fpi, "\n");
-      fprintf(fpc,"\n");
-    }
-
-    
-  }
-
-
+  
+  fwrite(AllAttrColours, sizeof(char), size*3*2, fpa);
+  fwrite(AllConvColours, sizeof(char), size*3*3, fpc);
+ 
 }
-
 
