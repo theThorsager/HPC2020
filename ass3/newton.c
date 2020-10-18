@@ -24,8 +24,6 @@ typedef struct {
 } int_padded;
 
 typedef struct {
-  const float **re_matrix;
-  const float **im_matrix;
   int degree;
   double*arr_r;
   double* arr_i;
@@ -88,8 +86,6 @@ main_thrd(
     )
 {
   const thrd_info_t *thrd_info = (thrd_info_t*) args;
-  //const float **re_matrix = thrd_info->re_matrix;
-  //const float **im_matrix=thrd_info->im_matrix;
   const int degree =thrd_info->degree;
   double* arr_r=thrd_info->arr_r;
   double*arr_i=thrd_info->arr_i;
@@ -195,20 +191,15 @@ main_thrd_check(
         mtx_unlock(mtx);
         break;
       }
+    }
 
     
-    }
-      
-
     // We do not initialize ix in this loop, but in the outer one.
     for ( ; ix < ibnd; ++ix ) {
-     
       WritePPM2(sz, root[ix],rgb_attr, fpc,iterations[ix],rgb_iter, fpi,Colours);
       free(root[ix]);
       free(iterations[ix]);
-    }
-
-     
+    } 
   }
 
   free(rgb_attr);
@@ -222,9 +213,7 @@ main_thrd_check(
 int
 main(int argc, char* argv[])
 {
-  
   //Parse command line args
-
   int nthrds;
   int sz;
   
@@ -240,49 +229,17 @@ main(int argc, char* argv[])
   }
 
  
-
   const int degree=atoi(argv[3]);
 
   //printf("%i,%i, %i\n",nthrds,sz, degree); 
   //Precalculcate roots
   double arr_r[degree];
   double arr_i[degree];
-
   PreCalcRoots(degree,arr_r,arr_i);
-
-  
-
-  //Initialize coordinate matrices
-  //  float **re_matrix=(float**) malloc(sz*sizeof(float*));
-  //float **im_matrix=(float**) malloc(sz*sizeof(float*));
-  // float *re_entries=(float*) malloc(sz*sz*sizeof(float));
-  // float *im_entries=(float*) malloc(sz*sz*sizeof(float));
-
-  
-  //Calculating gap between coordinates
-  // float gap=4./(sz-1);
-
-
-  /*
-  //Filling in coordinates
-  for ( int ix = 0, jx = 0; ix < sz; ++ix, jx += sz ){
-    re_matrix[ix]=re_entries+jx;
-    im_matrix[ix]=im_entries+jx;
-
-  }
-  for(int ix=0;ix<sz;++ix){
-    for(int jx=0;jx<sz;++jx){
-      re_matrix[ix][jx]=-2+ix*gap;
-      im_matrix[jx][ix]=2-ix*gap;
-    }
-  }
-  */
   
   //Initialize result matrices
   int **root=(int**) malloc(sz*sizeof(int*));
   int **iterations=(int**) malloc(sz*sizeof(int*));
-
-
 
   //Initializing threads
   thrd_t thrds[nthrds];
@@ -300,8 +257,6 @@ main(int argc, char* argv[])
   int_padded status[nthrds];
 
   for ( int tx = 0; tx < nthrds; ++tx ) {
-    //  thrds_info[tx].re_matrix = (const float**) re_matrix;
-    // thrds_info[tx].im_matrix= (const float**) im_matrix;
     thrds_info[tx].arr_r=arr_r;
     thrds_info[tx].arr_i=arr_i;
     thrds_info[tx].root=root;
@@ -332,7 +287,6 @@ main(int argc, char* argv[])
     thrd_info_check.nthrds = nthrds;
     thrd_info_check.mtx = &mtx;
 
-
     thrd_info_check.cnd = &cnd;
     // It is important that we have initialize status in the previous for-loop,
     // since it will be consumed by the check threads.
@@ -348,13 +302,8 @@ main(int argc, char* argv[])
   {
     int r;
     thrd_join(thrd_check, &r);
-
   }
 
-  // free(re_matrix);
-  // free(im_matrix);
-  // free(re_entries);
-  // free(im_entries);
   free(root);
   free(iterations);
 
@@ -363,11 +312,6 @@ main(int argc, char* argv[])
 
   return 0;
 }
-
-
-
-
-
 
 
 
@@ -390,7 +334,6 @@ PreCalcRoots(
 }
 
 
-
 int
 NewtonPoint(
 	    TYPE a_r,
@@ -406,7 +349,7 @@ NewtonPoint(
   ITER_T conv;
   ATT_T attr;
 
-  for ( conv = 0, attr = DEFAULT_VALUE; conv <= CAP; ++conv ) {
+  for ( conv = 0, attr = DEFAULT_VALUE; ; ++conv ) {
     TYPE sqNorm = a_r*a_r + a_i*a_i;
     
     if ( a_r > TOL_MAX || a_r < -TOL_MAX ||
@@ -554,19 +497,15 @@ NewtonPoint(
     fprintf(stderr, "unexpected degree\n");
     exit(1);
   }
-
-    //printf("%f + %fi\n", a_r, a_i);
-  
+    //printf("%f + %fi\n", a_r, a_i);  
   }
 
   // set the output
-  *i = conv;
+  *i = conv > 50 ? 50 : conv;
   *a = attr;
   
   return 0;
-
 }
-
 
 
 void WritePPM2(  int size,
@@ -579,8 +518,8 @@ void WritePPM2(  int size,
 		 int Colours[10][3]
 		 )
 {
-  size_t ja=0;
-  size_t jc=0;
+  size_t ja = 0;
+  size_t jc = 0;
   
   for ( size_t i = 0; i < size; ++i )
 	{
@@ -591,7 +530,6 @@ void WritePPM2(  int size,
 	  AllAttrColours[ja+3] = ' ';
 	  AllAttrColours[ja+4] = Colours[k][2] + 48;
 	  AllAttrColours[ja+5] = ' ';
-
 
 	  
 	  short ten = (a_conv[i] / 10) +48;
@@ -609,11 +547,7 @@ void WritePPM2(  int size,
 	  ja+=6;
 	  jc+=9;
 	}
-  
-
-  
+    
   fwrite(AllAttrColours, sizeof(char), size*3*2, fpa);
   fwrite(AllConvColours, sizeof(char), size*3*3, fpc);
- 
 }
-
