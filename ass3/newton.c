@@ -168,7 +168,7 @@ main_thrd_check(
   FILE *fpi = fopen(fpi_name, "wb");
   FILE *fpc = fopen(fpc_name, "wb");
   
-  fprintf(fpc, "P3\n%d %d\n%d\n", sz, sz, degree);
+  fprintf(fpc, "P3\n%d %d\n%d\n", sz, sz, 2);
   fprintf(fpi, "P3\n%d %d\n%d\n", sz, sz, 50);
 
    //making colour matrix to pick from in the write function
@@ -417,6 +417,8 @@ NewtonPoint(
       attr = VALUE;
       break;
     }
+    if (sqNorm <= 1.002001 && sqNorm >= 0.998001)
+      {
     for ( size_t ir = 0; ir < d; ++ir ) { // all the roots
       TYPE b_r = arr_r[ir];
       TYPE b_i = arr_i[ir];
@@ -430,7 +432,7 @@ NewtonPoint(
     }
     if ( attr != DEFAULT_VALUE ) // check if the previous root broke out;
       break;
-    
+      }
     // computation
     // (d-1)/d *x + 1/(d*x^(d-1))
     double sqr;
