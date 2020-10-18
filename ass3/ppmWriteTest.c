@@ -86,23 +86,23 @@ void WritePPM2(  int size,
 	  AllAttrColours[ja+3] = ' ';
 	  AllAttrColours[ja+4] = Colours[k][2] + 48;
 	  AllAttrColours[ja+5] = ' ';
-	  /*
-	  AllConvColours[j] = a_conv[i];
-	  AllConvColours[j] = a_conv[i];
-	  AllConvColours[j] = a_conv[i];
-	  AllConvColours[j+1] = a_conv[i];
-	  AllConvColours[j+1] = a_conv[i];
-	  AllConvColours[j+1] = a_conv[i];
-	  AllConvColours[j+2] = a_conv[i];
-	  AllConvColours[j+2] = a_conv[i];
-	  AllConvColours[j+2] = a_conv[i];
-	  */
+
+	  short ten = (a_conv[i] / 10) +48;
+	  short one = (a_conv[i] % 10) +48;
+	  AllConvColours[jc]   = ten;
+	  AllConvColours[jc+1] = one;
+	  AllConvColours[jc+2] = ' ';
+	  AllConvColours[jc+3] = ten;
+	  AllConvColours[jc+4] = one;
+	  AllConvColours[jc+5] = ' ';
+	  AllConvColours[jc+6] = ten;
+	  AllConvColours[jc+7] = one;
+	  AllConvColours[jc+8] = ' ';
 	  
 	  ja+=6;
+	  jc+=9;
 	}
-  
-
-  
+    
   fwrite(AllAttrColours, sizeof(char), size*3*2, fpa);
   fwrite(AllConvColours, sizeof(char), size*3*3, fpc);
  
