@@ -46,30 +46,43 @@ NewtonPoint(
   ITER_T conv;
   ATT_T attr;
 
+  if (d == 1)
+    {
+      *i = 1;
+      *a = 1;
+      return 0;
+    }
+
+  
   for ( conv = 0, attr = DEFAULT_VALUE; conv <= CAP; ++conv ) {
     TYPE sqNorm = a_r*a_r + a_i*a_i;
     
-    if ( a_r > TOL_MAX || a_r < -TOL_MAX ||
-	 a_i > TOL_MAX || a_i < -TOL_MAX ) { // Check upper bound
+    if ( a_r > Tol_MAX || a_r < -Tol_MAX ||
+	 a_i > Tol_MAX || a_i < -Tol_MAX ) { // Check upper bound
       attr = VALUE;
       break;
     } else if ( sqNorm < Tol_MIN * Tol_MIN ) { // Check lower bound
       attr = VALUE;
       break;
     }
-    for ( size_t ir = 0; ir < d; ++ir ) { // all the roots
-      TYPE b_r = arr_r[ir];
-      TYPE b_i = arr_i[ir];
-      b_r -= a_r;
-      b_i -= a_i;
-      
-      if ( b_r*b_r + b_i*b_i < Tol_MIN * Tol_MIN ) {
-	attr = ir + 1; // index of the root
-	break;
+    // all roots are defined to be on the unit circle, so begin by checking that
+    TYPE check = sqNorm - 1;
+    if (check <= 0.002001 && check >= -0.001999)
+      {
+	for ( size_t ir = 0; ir < d; ++ir ) { // all the roots
+	  TYPE b_r = arr_r[ir];
+	  TYPE b_i = arr_i[ir];
+	  b_r -= a_r;
+	  b_i -= a_i;
+	  
+	  if ( b_r*b_r + b_i*b_i < Tol_MIN * Tol_MIN ) {
+	    attr = ir + 1; // index of the root
+	    break;
+	  }
+	}
+	if ( attr != DEFAULT_VALUE ) // check if the previous root broke out;
+	  break;
       }
-    }
-    if ( attr != DEFAULT_VALUE ) // check if the previous root broke out;
-      break;
     
     // computation
     // (d-1)/d *x + 1/(d*x^(d-1))
@@ -204,14 +217,14 @@ NewtonPoint(
   return 0;
 }
 
-/*
+
 int
 main(
      int argc,
      char* argv[])
 {
 
-  size_t d = 7;
+  size_t d = 1;
 
   TYPE arr_r[d];
   TYPE arr_i[d];
@@ -221,7 +234,7 @@ main(
   TYPE a_r = -3.;
   TYPE a_i = 1.;
 
-  for (a_r = -2.; a_r < 2.; a_r += 0.1)
+  for (a_r = -2.; a_r < 2.; a_r += 0.01)
     {
   ITER_T i;
   ATT_T a;
@@ -229,7 +242,7 @@ main(
 NewtonPoint(a_r, a_i, d,
 	    arr_r, arr_i, &i, &a);
 
- printf("num of iterations: %d\nwhich attractor: %d\n", i, a);
+printf("num of iterations: %d\nwhich attractor: %d\n", i, a);
     }
 
   // Test Precalcing
@@ -249,3 +262,4 @@ NewtonPoint(a_r, a_i, d,
   return 0;
 }
 */
+}
