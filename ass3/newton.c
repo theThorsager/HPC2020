@@ -88,8 +88,8 @@ main_thrd(
     )
 {
   const thrd_info_t *thrd_info = (thrd_info_t*) args;
-  const float **re_matrix = thrd_info->re_matrix;
-  const float **im_matrix=thrd_info->im_matrix;
+  //const float **re_matrix = thrd_info->re_matrix;
+  //const float **im_matrix=thrd_info->im_matrix;
   const int degree =thrd_info->degree;
   double* arr_r=thrd_info->arr_r;
   double*arr_i=thrd_info->arr_i;
@@ -103,6 +103,9 @@ main_thrd(
   cnd_t *cnd = thrd_info->cnd;
   int_padded *status = thrd_info->status;
 
+
+  float gap = 4.f/(sz-1);
+  
   for ( int ix = ib; ix < sz; ix += istep ) {
     //const float *vix=v[ix];
     // We allocate the rows of the result before computing, and free them in another thread.
@@ -111,8 +114,11 @@ main_thrd(
 
     int iter;
     int attr;
+
+    float im = ix * gap - 2.f;
+
     for ( int jx = 0; jx < sz; ++jx ){
-      NewtonPoint(re_matrix[ix][jx],im_matrix[ix][jx],degree,arr_r,arr_i,&iter, &attr);
+      NewtonPoint(jx * gap - 2.f, im, degree, arr_r, arr_i, &iter, &attr);
       loc_iterations[jx]=iter;
       loc_root[jx]=attr;
     }
@@ -245,16 +251,17 @@ main(int argc, char* argv[])
   
 
   //Initialize coordinate matrices
-  float **re_matrix=(float**) malloc(sz*sizeof(float*));
-  float **im_matrix=(float**) malloc(sz*sizeof(float*));
-  float *re_entries=(float*) malloc(sz*sz*sizeof(float));
-  float *im_entries=(float*) malloc(sz*sz*sizeof(float));
+  //  float **re_matrix=(float**) malloc(sz*sizeof(float*));
+  //float **im_matrix=(float**) malloc(sz*sizeof(float*));
+  // float *re_entries=(float*) malloc(sz*sz*sizeof(float));
+  // float *im_entries=(float*) malloc(sz*sz*sizeof(float));
 
   
   //Calculating gap between coordinates
-  float gap=4./(sz-1);
+  // float gap=4./(sz-1);
 
 
+  /*
   //Filling in coordinates
   for ( int ix = 0, jx = 0; ix < sz; ++ix, jx += sz ){
     re_matrix[ix]=re_entries+jx;
@@ -267,6 +274,7 @@ main(int argc, char* argv[])
       im_matrix[jx][ix]=2-ix*gap;
     }
   }
+  */
   
   //Initialize result matrices
   int **root=(int**) malloc(sz*sizeof(int*));
@@ -290,8 +298,8 @@ main(int argc, char* argv[])
   int_padded status[nthrds];
 
   for ( int tx = 0; tx < nthrds; ++tx ) {
-    thrds_info[tx].re_matrix = (const float**) re_matrix;
-    thrds_info[tx].im_matrix= (const float**) im_matrix;
+    //  thrds_info[tx].re_matrix = (const float**) re_matrix;
+    // thrds_info[tx].im_matrix= (const float**) im_matrix;
     thrds_info[tx].arr_r=arr_r;
     thrds_info[tx].arr_i=arr_i;
     thrds_info[tx].root=root;
@@ -339,10 +347,12 @@ main(int argc, char* argv[])
     int r;
     thrd_join(thrd_check, &r);
 
-  }free(re_matrix);
-  free(im_matrix);
-  free(re_entries);
-  free(im_entries);
+  }
+
+  // free(re_matrix);
+  // free(im_matrix);
+  // free(re_entries);
+  // free(im_entries);
   free(root);
   free(iterations);
 
