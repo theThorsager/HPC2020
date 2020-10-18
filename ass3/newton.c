@@ -139,7 +139,7 @@ main_thrd_check(
     )
 {
   const thrd_info_check_t *thrd_info = (thrd_info_check_t*) args;
-  const int degree=thrd_info->degree;
+  int degree=thrd_info->degree;
   int **root = thrd_info->root;
   int **iterations = thrd_info->iterations;
   const int sz = thrd_info->sz;
@@ -153,9 +153,18 @@ main_thrd_check(
   int *rgb_attr = (int*) malloc(3*sz*sizeof(int));
   int *rgb_iter = (int*) malloc(3*sz*sizeof(int));
 
-  FILE *fpi = fopen("iterationPic.ppm", "wb");
-  FILE *fpi = fopen("iterationPic.ppm", "wb");
+  char fpi_name[30];
+  char fpc_name[30];
 
+  
+  snprintf(fpi_name,sizeof(fpi_name),"newton_convergence_x%d.ppm",degree);
+  snprintf(fpc_name,sizeof(fpc_name),"newton_attractors_x%d.ppm",degree); 
+
+ 
+  
+  FILE *fpi = fopen(fpi_name, "wb");
+  FILE *fpc = fopen(fpc_name, "wb");
+  
   fprintf(fpc, "P3\n%d %d\n%d\n", sz, sz, degree);
   fprintf(fpi, "P3\n%d %d\n%d\n", sz, sz, 50);
  
@@ -180,7 +189,7 @@ main_thrd_check(
 
     
     }
-      fprintf(stderr, "checking until %i\n", ibnd);
+      
 
     // We do not initialize ix in this loop, but in the outer one.
     for ( ; ix < ibnd; ++ix ) {
@@ -194,6 +203,9 @@ main_thrd_check(
   
   free(rgb_attr);
   free(rgb_iter);
+
+  fclose(fpi);
+  fclose(fpc);
   return 0;
 }
 
@@ -217,11 +229,12 @@ main(int argc, char* argv[])
     return -1;
   }
 
-  printf("%i,%i\n",nthrds,sz);
+ 
 
   const int degree=atoi(argv[3]);
 
-  //Precalculate roots
+  //printf("%i,%i, %i\n",nthrds,sz, degree); 
+  //Precalculcate roots
   double arr_r[degree];
   double arr_i[degree];
 
@@ -300,16 +313,13 @@ main(int argc, char* argv[])
   }
 
   {
+    thrd_info_check.degree=degree;
     thrd_info_check.root=root;
     thrd_info_check.iterations=iterations;
     thrd_info_check.sz = sz;
     thrd_info_check.nthrds = nthrds;
     thrd_info_check.mtx = &mtx;
 
-#define Tol_MIN 0.001
-#define Tol_MAX 10000000000.
-#define VALUE 0
-#define DEFAULT_VALUE -1 // 0 ?
 
     thrd_info_check.cnd = &cnd;
     // It is important that we have initialize status in the previous for-loop,
@@ -474,7 +484,7 @@ NewtonPoint(
     b = -20*a_r*a_r*a_r*a_i*a_i*a_i +
       6*a_r*a_r*a_r*a_r*a_r*a_i +
       6*a_i*a_i*a_i*a_i*a_i*a_r;
-    FILE *fpi = fopen("iterationPic.ppm", "wb");
+    
     sqr = a*a + b*b;
     a_r = (6./7.) * a_r + a / (7. * sqr);
     a_i = (6./7.) * a_i - b / (7. * sqr);
@@ -534,7 +544,7 @@ NewtonPoint(
   }
 
   // set the output
-  *i = conv;FILE *fpi = fopen("iterationPic.ppm", "wb");
+  *i = conv;
   *a = attr;
   
   return 0;
@@ -571,8 +581,5 @@ void WritePPM2(  int d,
 	}
   fwrite(AllConvColours, sizeof(int), size*3, fpc);
   fwrite(AllIterColours, sizeof(int), size*3, fpi);
-  
-  fclose(fpc);
-  fclose(fpi);
 
 }
