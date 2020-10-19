@@ -67,12 +67,16 @@ main(
     return 1;
   }
 
-
-  // load things into buffers
-  //    create buffers
-  //    load data to buffers
-
+  //Load things into buffers
   
+  // Create memory buffers on the device for each matrix 
+  cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_READ_ONLY, width*height*sizeof(float), NULL, &error);
+  cl_mem mem_matrix_b = clCreateBuffer(context, CL_MEM_READ_ONLY, width*height*sizeof(float), NULL, &error);
+  cl_mem mem_c = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float), NULL, &error);
+  //    load data to buffers
+  error = clEnqueueWriteBuffer(command_queue, mem_matrix_a, CL_TRUE, 0,width*height*sizeof(float), matrix_a, 0, NULL, NULL);
+  error = clEnqueueWriteBuffer(command_queue, mem_matrix_b, CL_TRUE, 0,width*height*sizeof(float), matrix_b, 0, NULL, NULL);
+  error = clEnqueueWriteBuffer(command_queue, a_mem_obj, CL_TRUE, 0,sizeof(float), c, 0, NULL, NULL);
 
   // Load the kernel source code into the array source_str
   FILE *fp;
@@ -98,11 +102,9 @@ main(
   cl_kernel kernel = clCreateKernel(program, "heat_diffusion", &error);
 
   // Set arguments to kernel
-  error=clSetKernelArg(kernel,0,sizeof(matrix_a),(void*) &matrix_a);
-  error=clSetKernelArg(kernel,1,sizeof(matrix_b),(void*) &matrix_b);
-  error=clSetKernelArg(kernel,2,sizeof(float), (void*) &c);
-  error=clSetKernelArg(kernel,3,sizeof(int), (void*) &width);
-  error=clSetKernelArg(kernel,4,sizeof(int),(void*) &height);
+  error=clSetKernelArg(kernel,0,sizeof(matrix_a),(void*) &mem_matrix_a);
+  error=clSetKernelArg(kernel,1,sizeof(matrix_b),(void*) &mem_atrix_b);
+  error=clSetKernelArg(kernel,2,sizeof(float), (void*) &mem_c);
 		       
   // Loop for number of iterations 
   {
