@@ -1,0 +1,16 @@
+CC = gcc
+BINS = heat_diffusion
+CFLAGS = -O2 -lm -g
+
+.PHONY : all
+all : $(BINS)
+
+heat_diffusion : heat_diffusion.c
+	$(CC) -o $@ $^ $(CFLAGS)
+
+.PHONY : clean
+clean :
+	rm -rf $(BINS)
+
+submission :
+	tar czf submit.tar.gz heat_diffusion.c makefile
