@@ -81,7 +81,7 @@ main(
     
 
   // Create the OpenCL kernel
-  cl_kernel kernel = clCreateKernel(program, "vector_add", &ret);
+  cl_kernel kernel = clCreateKernel(program, "heat_diffusion", &error);
 
   
 
