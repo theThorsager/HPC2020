@@ -1,6 +1,6 @@
 CC = gcc
 BINS = heat_diffusion
-CFLAGS = -O2 -lm -g
+CFLAGS = -O2 -lm -g -l OpenCL
 
 .PHONY : all
 all : $(BINS)
