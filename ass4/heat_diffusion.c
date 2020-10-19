@@ -83,9 +83,15 @@ main(
 
   // Release Command Queue
   clReleaseCommandQueue(command_queue);
-  
+
+  //Release program
+  clReleseProgram(program);
+
   // Release Context
   clReleaseContext(context);
+
+  free(souce_str);
+
   return 0;
 }
 
