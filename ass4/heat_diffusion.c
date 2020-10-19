@@ -8,6 +8,20 @@ main(
      int argc,
      char* argv[])
 {
+  // parse command line arguments
+  size_t iter = 1;
+  float c = 0.01f;
+  if (argc >= 3) {
+      if (argv[1][1] == 'n') {
+	iter = atoi(argv[1] + 2);
+	c = atof(argv[2] + 2);
+      } else {
+	iter = atoi(argv[2] + 2);
+	c = atof(argv[1] + 2);
+      }
+    }
+  // printf("-n%d -d%f\n", iter, c);
+    
   // Get platform
   cl_int error;
   cl_platform_id platform_id;
@@ -74,3 +88,4 @@ main(
   clReleaseContext(context);
   return 0;
 }
+
