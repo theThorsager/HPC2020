@@ -79,7 +79,7 @@ main(
  
     // Build the program
     error = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
-
+    
 
   // Release Command Queue
   clReleaseCommandQueue(command_queue);
