@@ -59,6 +59,12 @@ main(
   }
 
 
+  // load things into buffers
+  //    create buffers
+  //    load data to buffers
+
+  
+
   // Load the kernel source code into the array source_str
   FILE *fp;
   char *source_str;
@@ -79,12 +85,23 @@ main(
   // Build the program
   error = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
     
-
   // Create the OpenCL kernel
   cl_kernel kernel = clCreateKernel(program, "vector_add", &ret);
 
-  
+  // Set arguments to kernel
 
+  // Loop for number of iterations 
+  {
+  // execute kernel
+
+  }
+
+  // read results from buffer
+
+
+  // post proccessing
+
+  
   // Release Command Queue
   clReleaseCommandQueue(command_queue);
 
