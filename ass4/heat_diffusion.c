@@ -1,7 +1,8 @@
-#include<stdio.h>
+#include <stdio.h>
 
 #define MAX_SOURCE_SIZE (0x100000)
 
+#define CL_TARGET_OPENCL_VERSION 120
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #include <CL/cl.h>
 
@@ -88,7 +89,7 @@ main(
   error = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
     
   // Create the OpenCL kernel
-  cl_kernel kernel = clCreateKernel(program, "vector_add", &ret);
+  cl_kernel kernel = clCreateKernel(program, "vector_add", &error);
 
   // Set arguments to kernel
 
