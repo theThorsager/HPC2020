@@ -112,9 +112,22 @@ main(
 
   // read results from buffer
 
+  float* result; // add some reading from buffer here
 
   // post proccessing
+  //    Calculate average temp
+  const size_t N = width*height;
+  float averageT = 0;
 
+  for (size_t ix = 0; ix < N; ++ix)
+    averageT += result[ix];
+  averageT /= (N + 4 - width*2 - height*2);
+  
+  //    Calculate differance from average temp
+  float absAverageT = 0;
+  for (size_t ix = 0; ix < N; ++ix)
+    absAverageT += result[ix] - averageT;
+  absAverageT /= (N + 4 - width*2 - height*2);
   
   // Release Command Queue
   clReleaseCommandQueue(command_queue);
