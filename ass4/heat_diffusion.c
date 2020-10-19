@@ -79,13 +79,19 @@ main(
  
     // Build the program
     error = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
-
+    
 
   // Release Command Queue
   clReleaseCommandQueue(command_queue);
-  
+
+  //Release program
+  clReleseProgram(program);
+
   // Release Context
   clReleaseContext(context);
+
+  free(souce_str);
+
   return 0;
 }
 
