@@ -1,7 +1,10 @@
-#include <CL/cl.h>
-#include<stdio.h>
+#include <stdio.h>
 
 #define MAX_SOURCE_SIZE (0x100000)
+
+#define CL_TARGET_OPENCL_VERSION 120
+#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
+#include <CL/cl.h>
 
 int
 main(
@@ -34,7 +37,7 @@ main(
   // Get devices
   cl_device_id device_id;
   cl_uint nmb_devices;
-  if (clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1,
+  if (clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1,
                      &device_id, &nmb_devices) != CL_SUCCESS) {
       printf( "cannot get device\n" );
       return 1;
@@ -59,6 +62,12 @@ main(
   }
 
 
+  // load things into buffers
+  //    create buffers
+  //    load data to buffers
+
+  
+
   // Load the kernel source code into the array source_str
   FILE *fp;
   char *source_str;
@@ -79,12 +88,23 @@ main(
   // Build the program
   error = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
     
-
   // Create the OpenCL kernel
   cl_kernel kernel = clCreateKernel(program, "heat_diffusion", &error);
 
-  
+  // Set arguments to kernel
 
+  // Loop for number of iterations 
+  {
+  // execute kernel
+
+  }
+
+  // read results from buffer
+
+
+  // post proccessing
+
+  
   // Release Command Queue
   clReleaseCommandQueue(command_queue);
 
