@@ -59,27 +59,31 @@ main(
   }
 
 
-      // Load the kernel source code into the array source_str
-    FILE *fp;
-    char *source_str;
-    size_t source_size;
- 
-    fp = fopen("heat_diffusion.cl", "r");
-    if (!fp) {
-        fprintf(stderr, "Failed to load kernel.\n");
-        exit(1);
-    }
-    source_str = (char*)malloc(MAX_SOURCE_SIZE);
-    source_size = fread( source_str, 1, MAX_SOURCE_SIZE, fp);
-    fclose( fp );
-
+  // Load the kernel source code into the array source_str
+  FILE *fp;
+  char *source_str;
+  size_t source_size;
+  
+  fp = fopen("heat_diffusion.cl", "r");
+  if (!fp) {
+    fprintf(stderr, "Failed to load kernel.\n");
+    exit(1);
+  }
+  source_str = (char*)malloc(MAX_SOURCE_SIZE);
+  source_size = fread( source_str, 1, MAX_SOURCE_SIZE, fp);
+  fclose( fp );
+  
   // Create a program from the kernel source
-    cl_program program = clCreateProgramWithSource(context, 1, 
-						   (const char **)&source_str, (const size_t *)&source_size, &error/*&ret*/);
+  cl_program program = clCreateProgramWithSource(context, 1,(const char **)&source_str, (const size_t *)&source_size, &error/*&ret*/);
  
-    // Build the program
-    error = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+  // Build the program
+  error = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
     
+
+  // Create the OpenCL kernel
+  cl_kernel kernel = clCreateKernel(program, "vector_add", &ret);
+
+  
 
   // Release Command Queue
   clReleaseCommandQueue(command_queue);
