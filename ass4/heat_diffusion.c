@@ -70,8 +70,8 @@ main(
   //Load things into buffers
   
   // Create memory buffers on the device for each matrix 
-  cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_READ_ONLY, width*height*sizeof(float), NULL, &error);
-  cl_mem mem_matrix_b = clCreateBuffer(context, CL_MEM_READ_ONLY, width*height*sizeof(float), NULL, &error);
+  cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_WRITE_READ, width*height*sizeof(float), NULL, &error);
+  cl_mem mem_matrix_b = clCreateBuffer(context, CL_MEM_WRITE_READ, width*height*sizeof(float), NULL, &error);
   cl_mem mem_c = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float), NULL, &error);
   //    load data to buffers
   error = clEnqueueWriteBuffer(command_queue, mem_matrix_a, CL_TRUE, 0,width*height*sizeof(float), matrix_a, 0, NULL, NULL);
@@ -93,29 +93,48 @@ main(
   fclose( fp );
   
   // Create a program from the kernel source
-  cl_program program = clCreateProgramWithSource(context, 1,(const char **)&source_str, (const size_t *)&source_size, &error/*&ret*/);
+  cl_program program = clCreateProgramWithSource(context, 1,(const char **)&source_str, (const size_t *)&source_size, &error);
  
   // Build the program
   error = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
     
   // Create the OpenCL kernel
-  cl_kernel kernel = clCreateKernel(program, "heat_diffusion", &error);
+  cl_kernel kernelE = clCreateKernel(program, "heat_diffusion", &error);
+  cl_kernel kernelO = clCreateKernel(program, "heat_diffusion", &error);
 
   // Set arguments to kernel
-  error=clSetKernelArg(kernel,0,sizeof(matrix_a),(void*) &mem_matrix_a);
-  error=clSetKernelArg(kernel,1,sizeof(matrix_b),(void*) &mem_atrix_b);
-  error=clSetKernelArg(kernel,2,sizeof(float), (void*) &mem_c);
-		       
-  // Loop for number of iterations 
-  {
-  // execute kernel
+  error=clSetKernelArg(kernelE,0,sizeof(matrix_a),(void*) &mem_matrix_a);
+  error=clSetKernelArg(kernelE,1,sizeof(matrix_b),(void*) &mem_atrix_b);
+  error=clSetKernelArg(kernelE,2,sizeof(float), (void*) &mem_c);
 
+  error=clSetKernelArg(kernelO,1,sizeof(matrix_a),(void*) &mem_matrix_a);
+  error=clSetKernelArg(kernelO,0,sizeof(matrix_b),(void*) &mem_atrix_b);
+  error=clSetKernelArg(kernelO,2,sizeof(float), (void*) &mem_c);
+
+
+  // Execute the OpenCL kernel on the list
+  size_t global_item_size = LIST_SIZE; // Process the entire lists
+  size_t local_item_size = 64; // Divide work items into groups of 64
+
+  clu_int offset = {1, 1};
+  
+  // Loop for number of iterations
+  for (size_t ix = 0; ix < iter; ++ix) {
+    // execute kernel
+    error = clEnqueueNDRangeKernel(command_queue,
+				   ix % 2 == 0 ? kernelE : kernelO,
+				   2, offset,
+				   &global_item_size, &local_item_size,
+				   0, NULL, NULL);	   
   }
 
   // read results from buffer
 
   float* result; // add some reading from buffer here
 
+  ret = clEnqueueReadBuffer(command_queue, mem_c, CL_TRUE, 0,
+			    LIST_SIZE * sizeof(float), result, 0, NULL, NULL);
+  
   // post proccessing
   //    Calculate average temp
   const size_t N = width*height;
@@ -141,6 +160,7 @@ main(
   clReleaseContext(context);
 
   free(source_str);
+  // Free more things
 
   return 0;
 }
