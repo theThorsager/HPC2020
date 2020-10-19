@@ -25,6 +25,12 @@ main(
     }
   // printf("-n%d -d%f\n", iter, c);
     
+
+ 
+  
+
+
+
   // Get platform
   cl_int error;
   cl_platform_id platform_id;
@@ -92,7 +98,12 @@ main(
   cl_kernel kernel = clCreateKernel(program, "heat_diffusion", &error);
 
   // Set arguments to kernel
-
+  error=clSetKernelArg(kernel,0,sizeof(matrix_a),(void*) &matrix_a);
+  error=clSetKernelArg(kernel,1,sizeof(matrix_b),(void*) &matrix_b);
+  error=clSetKernelArg(kernel,2,sizeof(float), (void*) &c);
+  error=clSetKernelArg(kernel,3,sizeof(int), (void*) &width);
+  error=clSetKernelArg(kernel,4,sizeof(int),(void*) &height);
+		       
   // Loop for number of iterations 
   {
   // execute kernel
