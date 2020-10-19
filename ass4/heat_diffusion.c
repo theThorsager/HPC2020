@@ -34,7 +34,7 @@ main(
   // Get devices
   cl_device_id device_id;
   cl_uint nmb_devices;
-  if (clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1,
+  if (clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1,
                      &device_id, &nmb_devices) != CL_SUCCESS) {
       printf( "cannot get device\n" );
       return 1;
@@ -48,7 +48,7 @@ main(
      (cl_context_properties) platform_id,
      0
     };
-  context = clCreateContext(properties, 1, &device_id, NULL, NULL, NULL, NULL, NULL, &error);
+  context = clCreateContext(properties, 1, &device_id, NULL, NULL, &error);
 
   // Create command Queue
   cl_command_queue command_queue;
@@ -89,12 +89,12 @@ main(
   clReleaseCommandQueue(command_queue);
 
   //Release program
-  clReleseProgram(program);
+  clReleaseProgram(program);
 
   // Release Context
   clReleaseContext(context);
 
-  free(souce_str);
+  free(source_str);
 
   return 0;
 }
