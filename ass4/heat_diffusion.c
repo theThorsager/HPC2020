@@ -1,7 +1,9 @@
-#include <CL/cl.h>
 #include<stdio.h>
 
 #define MAX_SOURCE_SIZE (0x100000)
+
+#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
+#include <CL/cl.h>
 
 int
 main(
@@ -34,7 +36,7 @@ main(
   // Get devices
   cl_device_id device_id;
   cl_uint nmb_devices;
-  if (clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1,
+  if (clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1,
                      &device_id, &nmb_devices) != CL_SUCCESS) {
       printf( "cannot get device\n" );
       return 1;
