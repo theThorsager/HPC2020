@@ -6,6 +6,8 @@
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #include <CL/cl.h>
 
+void READ(float** temp, int* dim);
+
 int
 main(
      int argc,
@@ -24,8 +26,11 @@ main(
       }
     }
   // printf("-n%d -d%f\n", iter, c);
-    
+  
 
+  float** matrix;
+  int dim[2];
+  READ(matrix, dim);
  
   
 
