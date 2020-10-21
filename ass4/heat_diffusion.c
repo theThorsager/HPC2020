@@ -169,9 +169,9 @@ main(
   error=clFlush(command_queue);
   error=clFinish(command_queue);
   error=clReleaseKernel(kernelE);
-  error=clReleaseKernel(KernelO);
+  error=clReleaseKernel(kernelO);
   error=clReleaseMemObject(mem_matrix_a);
-  error=clreleaseMemObject(mem_matrix_b);
+  error=clReleaseMemObject(mem_matrix_b);
   error=clReleaseMemObject(mem_c);
   error=clReleaseCommandQueue(command_queue);
   //Release program
