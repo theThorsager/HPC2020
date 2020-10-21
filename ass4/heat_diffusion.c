@@ -6,6 +6,8 @@
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #include <CL/cl.h>
 
+#define LIST_SIZE 100
+
 void READ(float** temp, int* dim);
 
 int
@@ -17,7 +19,7 @@ main(
   size_t iter = 1;
   float c = 0.01f;
   if (argc >= 3) {
-      if (argv[1][1] == 'n') {
+    if (argv[1][1] == 'n') {
 	iter = atoi(argv[1] + 2);
 	c = atof(argv[2] + 2);
       } else {
@@ -73,15 +75,20 @@ main(
   }
 
   //Load things into buffers
+  int width = dim[0];
+  int height = dim[1];
   
+  float* matrix_a = matrix[0];
+  float* matrix_b = malloc(sizeof(float)*width*height);   // change
+
   // Create memory buffers on the device for each matrix 
-  cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_WRITE_READ, width*height*sizeof(float), NULL, &error);
-  cl_mem mem_matrix_b = clCreateBuffer(context, CL_MEM_WRITE_READ, width*height*sizeof(float), NULL, &error);
+  cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_READ_WRITE, width*height*sizeof(float), NULL, &error);
+  cl_mem mem_matrix_b = clCreateBuffer(context, CL_MEM_READ_WRITE, width*height*sizeof(float), NULL, &error);
   cl_mem mem_c = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float), NULL, &error);
   //    load data to buffers
   error = clEnqueueWriteBuffer(command_queue, mem_matrix_a, CL_TRUE, 0,width*height*sizeof(float), matrix_a, 0, NULL, NULL);
   error = clEnqueueWriteBuffer(command_queue, mem_matrix_b, CL_TRUE, 0,width*height*sizeof(float), matrix_b, 0, NULL, NULL);
-  error = clEnqueueWriteBuffer(command_queue, a_mem_obj, CL_TRUE, 0,sizeof(float), c, 0, NULL, NULL);
+  error = clEnqueueWriteBuffer(command_queue, mem_c, CL_TRUE, 0, sizeof(float), &c, 0, NULL, NULL);
 
   // Load the kernel source code into the array source_str
   FILE *fp;
@@ -109,11 +116,11 @@ main(
 
   // Set arguments to kernel
   error=clSetKernelArg(kernelE,0,sizeof(matrix_a),(void*) &mem_matrix_a);
-  error=clSetKernelArg(kernelE,1,sizeof(matrix_b),(void*) &mem_atrix_b);
+  error=clSetKernelArg(kernelE,1,sizeof(matrix_b),(void*) &mem_matrix_b);
   error=clSetKernelArg(kernelE,2,sizeof(float), (void*) &mem_c);
 
   error=clSetKernelArg(kernelO,1,sizeof(matrix_a),(void*) &mem_matrix_a);
-  error=clSetKernelArg(kernelO,0,sizeof(matrix_b),(void*) &mem_atrix_b);
+  error=clSetKernelArg(kernelO,0,sizeof(matrix_b),(void*) &mem_matrix_b);
   error=clSetKernelArg(kernelO,2,sizeof(float), (void*) &mem_c);
 
 
@@ -121,7 +128,7 @@ main(
   size_t global_item_size = LIST_SIZE; // Process the entire lists
   size_t local_item_size = 64; // Divide work items into groups of 64
 
-  clu_int offset = {1, 1};
+  const size_t offset[2] = {1, 1};
   
   // Loop for number of iterations
   for (size_t ix = 0; ix < iter; ++ix) {
@@ -137,7 +144,7 @@ main(
 
   float* result; // add some reading from buffer here
 
-  ret = clEnqueueReadBuffer(command_queue, mem_c, CL_TRUE, 0,
+  error = clEnqueueReadBuffer(command_queue, mem_c, CL_TRUE, 0,
 			    LIST_SIZE * sizeof(float), result, 0, NULL, NULL);
   
   // post proccessing
