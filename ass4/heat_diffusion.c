@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #define MAX_SOURCE_SIZE (0x100000)
 
@@ -30,10 +31,103 @@ main(
   // printf("-n%d -d%f\n", iter, c);
   
   // Parsing from the file
-  float** matrix;
+  // float** matrix;
   int dim[2];
-  READ(matrix, dim);
- 
+  char* filePath = "./diffusion";
+  FILE* file = fopen(filePath,"r");
+  int dimsizeskip;
+  {
+    if ( file == NULL)
+      {
+	printf("Failed to open file sademoji!\n");
+	exit(1);
+      }
+
+    int firstDataLineSize = 20;
+    char* dimString = malloc(sizeof(char)* firstDataLineSize);
+    fread(dimString, sizeof(char), firstDataLineSize,file);
+
+    int dimsz = 2;
+    // int dim[2] = {0, 0};
+    int DimIndex = 0;
+
+    int j = 0;
+    
+    for ( size_t i = 0; i < firstDataLineSize; ++i )
+      {
+	if( dimString[i] == ' ' || dimString[i] == '\n')
+	  {
+	    char dest[i-j+1];
+	    dest[i-j] = '\0';
+	    strncpy(dest, dimString + j,i-j);
+	    dim[DimIndex] = atoi(dest);
+
+	    DimIndex++;
+	    if( DimIndex == 2)
+	      {
+		dimsizeskip=i+1;
+		break;
+	      }
+	    j=i+1;
+	  }
+      }
+
+  }
+    //create temp matrix full of zeros
+    float* tempEntries = calloc((dim[0]+2)*(dim[1]+2), sizeof(float));
+    float** temp = (float**)malloc(sizeof(float*)*(dim[0]+2));
+    for ( size_t ix = 0, jx = 0; ix <dim[0]+2; ++ix, jx+=dim[1]+2)
+      temp[ix] = tempEntries + jx;
+
+    {
+    // find the length of the dimension part of the data
+
+    //find the size of the data file without dimension line
+    fseek(file,0,SEEK_END);
+    int fileEnd = ftell(file);
+    fseek(file,dimsizeskip,SEEK_SET);
+    int fileStart = ftell(file);
+    int filelength = fileEnd-fileStart;
+
+    //read eveything in file
+    char* data = malloc(sizeof(char) *filelength);
+    fread(data, sizeof(char), filelength,file);
+
+    int j = 0;
+    int k = 0;
+
+    int X;
+    int Y;
+    for( size_t i = 0; i < filelength; i++)
+      {
+	if( data[i] == ' ' || data[i] == '\n')
+	  {
+	    char dest[i-j+1];
+	    dest[i-j] = '\0';
+	    strncpy(dest, data + j,i-j);
+
+	    switch (k)
+	      {
+	      case 0:
+		X = atoi(dest);
+		k=1;
+		break;
+	      case 1:
+		Y = atoi(dest);
+		k=2;
+		break;
+	      case 2:
+		temp[X+1][Y+1]= (float)(double)atof(dest);
+		k=0;
+		break;
+	      }
+	    j=i+1;
+	  }
+      }
+    free(data);
+  }
+
+  
   // Get platform
   cl_int error;
   cl_platform_id platform_id;
@@ -75,8 +169,8 @@ main(
   int height = dim[1];
   int sz_with_padding = (width+2)*(height+2);
   
-  float* matrix_a = matrix[0];
-  float* matrix_b = malloc(sizeof(float)*sz_with_padding);   // change
+  float* matrix_a = temp[0];
+  float* matrix_b = malloc(sizeof(float)*sz_with_padding);
 
   // Create memory buffers on the device for each matrix 
   cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_READ_WRITE, sz_with_padding*sizeof(float), NULL, &error);
@@ -161,29 +255,34 @@ main(
   //    Calculate differance from average temp
   float absAverageT = 0;
   for (size_t ix = 0; ix < N; ++ix)
-    absAverageT += result[ix] - averageT;
+    {
+      float abs = result[ix] - averageT;
+      absAverageT += abs < 0 ? -abs : abs;
+    }
   absAverageT /= N;
   printf("%f\n", absAverageT);
   
   // Release Command Queue
-  error=clFlush(command_queue);
-  error=clFinish(command_queue);
-  error=clReleaseKernel(kernelE);
-  error=clReleaseKernel(kernelO);
-  error=clReleaseMemObject(mem_matrix_a);
-  error=clReleaseMemObject(mem_matrix_b);
-  error=clReleaseMemObject(mem_c);
-  error=clReleaseCommandQueue(command_queue);
+  error = clFlush(command_queue);
+  error = clFinish(command_queue);
+  error = clReleaseKernel(kernelE);
+  error = clReleaseKernel(kernelO);
+  error = clReleaseMemObject(mem_matrix_a);
+  error = clReleaseMemObject(mem_matrix_b);
+  error = clReleaseMemObject(mem_c);
+  error = clReleaseCommandQueue(command_queue);
   //Release program
-  error=clReleaseProgram(program);
+  error = clReleaseProgram(program);
 
   // Release Context
-  error=clReleaseContext(context);
+  error = clReleaseContext(context);
 
-  free(source_str);
-  free(matrix);
-  free(matrix_a);
+  //free(source_str);
+  free(tempEntries);
+  free(temp);
+  //free(matrix_a);
   free(matrix_b);
+  free(result);
   // Free more things
   
   return 0;
