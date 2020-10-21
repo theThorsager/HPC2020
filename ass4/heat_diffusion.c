@@ -6,7 +6,7 @@
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #include <CL/cl.h>
 
-#define LIST_SIZE 100
+
 
 void READ(float** temp, int* dim);
 
@@ -141,7 +141,6 @@ main(
   }
 
   // read results from buffer
-
   float* result = malloc(sizeof(float)*width*height);
   error = clEnqueueReadBuffer(command_queue,
 			      ix % 2 == 0 ? mem_matrix_a : mem_matrix_b,   // Test which is right
@@ -167,17 +166,26 @@ main(
   printf("%f\n", absAverageT);
   
   // Release Command Queue
-  clReleaseCommandQueue(command_queue);
-
+  error=clFlush(command_queue);
+  error=clFinish(command_queue);
+  error=clReleaseKernel(kernelE);
+  error=clReleaseKernel(KernelO);
+  error=clReleaseMemObject(mem_matrix_a);
+  error=clreleaseMemObject(mem_matrix_b);
+  error=clReleaseMemObject(mem_c);
+  error=clReleaseCommandQueue(command_queue);
   //Release program
-  clReleaseProgram(program);
+  error=clReleaseProgram(program);
 
   // Release Context
-  clReleaseContext(context);
+  error=clReleaseContext(context);
 
   free(source_str);
+  free(matrix);
+  free(matrix_a);
+  free(matrix_b);
   // Free more things
-
+  
   return 0;
 }
 
