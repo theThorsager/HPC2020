@@ -202,11 +202,39 @@ main(
   // Build the program
   error = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
   
+  if (error != CL_SUCCESS)
+    {
+
+      printf("cannot build program. log:\n");
+      size_t log_size = 0;
+      clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG,
+			    0, NULL, &log_size);
+      char * log = calloc(log_size, sizeof(char));
+      if (log == NULL)
+	{
+	  printf("could not allocate memory\n");
+	  return 1;
+	}
+      clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG,
+			    log_size, log, NULL);
+      printf( "%s\n", log );
+      free(log);
+      return 1;
+    }
+      
+     
+
+  
   
   // Create the OpenCL kernel
   cl_kernel kernelE = clCreateKernel(program, "heat_diffusion", &error);
   cl_kernel kernelO = clCreateKernel(program, "heat_diffusion", &error);
-
+  if (error != CL_SUCCESS)
+    {
+      printf("Failed to create the kernel, error code: %d\n", error);
+      exit(1);
+    }
+ 
   // Set arguments to kernel
   error = clSetKernelArg(kernelE,0,sizeof(matrix_a),(void*) &mem_matrix_a);
   error = clSetKernelArg(kernelE,1,sizeof(matrix_b),(void*) &mem_matrix_b);
@@ -216,10 +244,15 @@ main(
   error = clSetKernelArg(kernelO,0,sizeof(matrix_b),(void*) &mem_matrix_b);
   error = clSetKernelArg(kernelO,2,sizeof(float), (void*) &mem_c);
 
+if (error != CL_SUCCESS)
+    {
+      printf("Failed to set the arguments, error code: %d\n", error);
+      exit(1);
+    }
 
   // Execute the OpenCL kernel on the list
-  size_t global_item_size = width*height; // Process the entire lists
-  size_t local_item_size = 32; // Divide work items into groups of 64
+  size_t global_item_size[2] = { dim[0], dim[1] }; // Process the entire lists
+  size_t local_item_size[2] = { 32, 32 }; // Divide work items into groups of 64
 
   const size_t offset[2] = {1, 1};
   
@@ -230,8 +263,13 @@ main(
     error = clEnqueueNDRangeKernel(command_queue,
 				   ix % 2 == 0 ? kernelE : kernelO,
 				   2, offset,
-				   &global_item_size, &local_item_size,
+				   global_item_size, local_item_size,
 				   0, NULL, NULL);	   
+    if (error != CL_SUCCESS)
+    {
+      printf("Failed to run the kernel, error code: %d\n", error);
+      exit(1);
+    }
   }
 
   // read results from buffer
@@ -241,10 +279,16 @@ main(
 			      CL_TRUE, 0,
 			      width*height * sizeof(float), result,
 			      0, NULL, NULL);
-  
+
+  if (error != CL_SUCCESS)
+    {
+      printf("Failed to read teh results, error code: %d\n", error);
+      exit(1);
+    }
+
   // post proccessing
   //    Calculate average temp
-  const size_t N = width*height;
+  const size_t N = (width+2)*(height+2);
   float averageT = 0;
 
   for (size_t ix = 0; ix < N; ++ix)
