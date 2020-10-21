@@ -6,7 +6,7 @@
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #include <CL/cl.h>
 
-#define LIST_SIZE 100
+
 
 void READ(float** temp, int* dim);
 
@@ -145,7 +145,7 @@ main(
   float* result; // add some reading from buffer here
 
   error = clEnqueueReadBuffer(command_queue, mem_c, CL_TRUE, 0,
-			    LIST_SIZE * sizeof(float), result, 0, NULL, NULL);
+			    width*height * sizeof(float), result, 0, NULL, NULL);
   
   // post proccessing
   //    Calculate average temp
@@ -163,17 +163,26 @@ main(
   absAverageT /= (N + 4 - width*2 - height*2);
   
   // Release Command Queue
-  clReleaseCommandQueue(command_queue);
-
+  error=clFlush(command_queue);
+  error=clFinish(command_queue);
+  error=clReleaseKernel(kernelE);
+  error=clReleaseKernel(KernelO);
+  error=clReleaseMemObject(mem_matrix_a);
+  error=clreleaseMemObject(mem_matrix_b);
+  error=clReleaseMemObject(mem_c);
+  error=clReleaseCommandQueue(command_queue);
   //Release program
-  clReleaseProgram(program);
+  error=clReleaseProgram(program);
 
   // Release Context
-  clReleaseContext(context);
+  error=clReleaseContext(context);
 
   free(source_str);
+  free(matrix);
+  free(matrix_a);
+  free(matrix_b);
   // Free more things
-
+  
   return 0;
 }
 
