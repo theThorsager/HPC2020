@@ -4,7 +4,7 @@
 
 void READ(float** temp, int* dim)
 {
-  char* filePath = "./diffusion.txt";
+  char* filePath = "./diffusion";
   FILE* file = fopen(filePath,"r");
   if ( file == NULL)
     {
