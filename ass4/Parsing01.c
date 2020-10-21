@@ -1,26 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void READ(float** temp, int* dim)
 {
-  
-
-}
-
-int
-main (int argc, char* argv[])
-{
-
-  //char* testData = "100 100\n44 64 9.355469544534684e+18\n82 99 2.643092747172943e+18\n29 29 5.266497277936674e+18";
-
-  //INCLUDE <string.h>
-
   char* filePath = "./testData";
   FILE* file = fopen(filePath,"r");
   if ( file == NULL)
     {
     printf("Failed to open file sademoji!\n");
-    return -1;
+    exit(1);
     }
   
   int firstDataLineSize = 13;
@@ -28,7 +17,7 @@ main (int argc, char* argv[])
   fread(dimString, sizeof(char), firstDataLineSize,file);
 
   int dimsz = 2;
-  int dim[2] = {0, 0};
+  // int dim[2] = {0, 0};
   int DimIndex = 0;
   
   int j = 0;
@@ -39,7 +28,7 @@ main (int argc, char* argv[])
 	{
 	  char* dest;
 	  
-	  strncopy(dest, dimString + j,i-j);
+	  strncpy(dest, dimString + j,i-j);
 	  dim[DimIndex] = atoi(dest);
 
 	  DimIndex++;
@@ -54,7 +43,7 @@ main (int argc, char* argv[])
 
   //create temp matrix full of zeros
   float* tempEntries = calloc((dim[0]+2)*(dim[1]+2), sizeof(float));
-  float** temp = (float**)malloc(sizeof(float*)*dim[0]);
+  temp = (float**)malloc(sizeof(float*)*dim[0]);
   for ( size_t ix = 0, jx = 0; ix <dim[0]+2; ++ix, jx+=dim[1]+2)
     temp[ix] = tempEntries + jx;
 
@@ -93,7 +82,7 @@ main (int argc, char* argv[])
       if( data[i] == ' ' && k==0)
 	{
 	  char* dest;
-	  strncopy(dest, data + j,i-j);
+	  strncpy(dest, data + j,i-j);
 	  X = atoi(dest);
 	  j=i+1;
 	  k++;
@@ -101,7 +90,7 @@ main (int argc, char* argv[])
       if( data[i] == ' ' && k==1)
 	{
 	  char* dest;
-	  strncopy(dest, data + j,i-j);
+	  strncpy(dest, data + j,i-j);
 	  Y = atoi(dest);
 	  j=i+1;
 	  k++;
@@ -110,14 +99,11 @@ main (int argc, char* argv[])
       if( data[i] == ' ' && k==2)
 	{
 	  char* dest;
-	  strncopy(dest, data + j,i-j);
+	  strncpy(dest, data + j,i-j);
 	  temp[X+1][Y+1]= atof(dest);
 	  
 	  j=i+1;
 	  k=0;
 	}
     }
-
-   
-  return 0;
 }
