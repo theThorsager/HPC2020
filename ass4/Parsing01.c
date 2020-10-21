@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void READ( FILE* file, )
+void READ(float** temp, int* dim)
 {
   
 
 }
+
 int
 main (int argc, char* argv[])
 {
