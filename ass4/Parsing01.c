@@ -4,7 +4,7 @@
 
 void READ(float** temp, int* dim)
 {
-  char* filePath = "./testData";
+  char* filePath = "./diffusion.txt";
   FILE* file = fopen(filePath,"r");
   if ( file == NULL)
     {
@@ -12,7 +12,7 @@ void READ(float** temp, int* dim)
     exit(1);
     }
   
-  int firstDataLineSize = 13;
+  int firstDataLineSize = 20;
   char* dimString = malloc(sizeof(char)* firstDataLineSize);
   fread(dimString, sizeof(char), firstDataLineSize,file);
 
@@ -24,47 +24,36 @@ void READ(float** temp, int* dim)
   int dimsizeskip;
   for ( size_t i = 0; i < firstDataLineSize; ++i )
     {
-      if( dimString[i] == ' ')
+      if( dimString[i] == ' ' || dimString[i] == '\n')
 	{
-	  char* dest;
-	  
+	  char dest[i-j+1];
+	  dest[i-j] = '\0';
 	  strncpy(dest, dimString + j,i-j);
 	  dim[DimIndex] = atoi(dest);
 
 	  DimIndex++;
 	  if( DimIndex == 2)
 	    {
-	      dimsizeskip=i;
+	      dimsizeskip=i+1;
 	      break;
 	    }
-	  j=i;
+	  j=i+1;
 	  }
     }
 
   //create temp matrix full of zeros
   float* tempEntries = calloc((dim[0]+2)*(dim[1]+2), sizeof(float));
-  temp = (float**)malloc(sizeof(float*)*dim[0]);
+  temp = (float**)malloc(sizeof(float*)*(dim[0]+2));
   for ( size_t ix = 0, jx = 0; ix <dim[0]+2; ++ix, jx+=dim[1]+2)
     temp[ix] = tempEntries + jx;
 
 
   // find the length of the dimension part of the data
-  int dimCharCount=2; // one space and one new line is on the first row already
-  while (dim[0] != 0)
-    {
-      dim[0] /= 10;
-      dimCharCount++;
-    }
-  while (dim[1] != 0)
-    {
-      dim[1] /= 10;
-      dimCharCount++;
-    }
 
   //find the size of the data file without dimension line
   fseek(file,0,SEEK_END);
   int fileEnd = ftell(file);
-  fseek(file,dimCharCount,SEEK_SET);
+  fseek(file,dimsizeskip,SEEK_SET);
   int fileStart = ftell(file);
   int filelength = fileEnd-fileStart;
 
@@ -79,31 +68,28 @@ void READ(float** temp, int* dim)
   int Y;
   for( size_t i = 0; i < filelength; i++)
     {      
-      if( data[i] == ' ' && k==0)
+      if( data[i] == ' ' || data[i] == '\n')
 	{
-	  char* dest;
+	  char dest[i-j+1];
+	  dest[i-j] = '\0';
 	  strncpy(dest, data + j,i-j);
-	  X = atoi(dest);
-	  j=i+1;
-	  k++;
-	}
-      if( data[i] == ' ' && k==1)
-	{
-	  char* dest;
-	  strncpy(dest, data + j,i-j);
-	  Y = atoi(dest);
-	  j=i+1;
-	  k++;
-	}
-
-      if( data[i] == ' ' && k==2)
-	{
-	  char* dest;
-	  strncpy(dest, data + j,i-j);
-	  temp[X+1][Y+1]= atof(dest);
 	  
+	  switch (k)
+	    {
+	    case 0:
+	      X = atoi(dest);
+	      k=1;
+	  break;
+	    case 1:
+	      Y = atoi(dest);
+	      k=2;
+	  break;
+	    case 2:
+	      temp[X+1][Y+1]= atof(dest);
+	      k=0;
+	  break;
+	    }
 	  j=i+1;
-	  k=0;
 	}
     }
 }
