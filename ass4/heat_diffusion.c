@@ -268,11 +268,6 @@ if (error != CL_SUCCESS)
 				   2, offset,
 				   global_item_size, NULL,
 				   0, NULL, NULL);	   
-    if (error != CL_SUCCESS)
-    {
-      printf("Failed to run the kernel, error code: %d\n", error);
-      exit(1);
-    }
   }
 
   // read results from buffer
