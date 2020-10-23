@@ -234,19 +234,21 @@ main(
       printf("Failed to create the kernel, error code: %d\n", error);
       exit(1);
     }
+  int pW = width + 2;
+  int pH = height + 2;
  
   // Set arguments to kernel
   error = clSetKernelArg(kernelE,0,sizeof(cl_mem),(void*) &mem_matrix_a);
   error = clSetKernelArg(kernelE,1,sizeof(cl_mem),(void*) &mem_matrix_b);
   error = clSetKernelArg(kernelE,2,sizeof(c), &c);
-  error = clSetKernelArg(kernelE,3,sizeof(width), &width);
-  error = clSetKernelArg(kernelE,4,sizeof(height), &height);
+  error = clSetKernelArg(kernelE,3,sizeof(pW), &pW);
+  error = clSetKernelArg(kernelE,4,sizeof(pH), &pH);
   
   error = clSetKernelArg(kernelO,1,sizeof(cl_mem),(void*) &mem_matrix_a);
   error = clSetKernelArg(kernelO,0,sizeof(cl_mem),(void*) &mem_matrix_b);
   error = clSetKernelArg(kernelO,2,sizeof(c), &c);
-  error = clSetKernelArg(kernelO,3,sizeof(width),  &width);
-  error = clSetKernelArg(kernelO,4,sizeof(height), &width);
+  error = clSetKernelArg(kernelO,3,sizeof(pW),  &pW);
+  error = clSetKernelArg(kernelO,4,sizeof(pH), &pH);
   
 if (error != CL_SUCCESS)
     {
@@ -255,7 +257,7 @@ if (error != CL_SUCCESS)
     }
 
   // Execute the OpenCL kernel on the list
-  size_t global_item_size[2] = { height, width }; // Process the entire lists
+  size_t global_item_size[2] = { height + 2, width + 2 }; // Process the entire lists
   size_t local_item_size[2] = { 32, 32 }; // Divide work items into groups of 64
 
   const size_t offset[2] = {1, 1};
@@ -266,7 +268,7 @@ if (error != CL_SUCCESS)
     // execute kernel
     error = clEnqueueNDRangeKernel(command_queue,
 				   ix % 2 == 0 ? kernelE : kernelO,
-				   2, offset,
+				   2, NULL,
 				   global_item_size, NULL,
 				   0, NULL, NULL);	   
     if (error != CL_SUCCESS)
