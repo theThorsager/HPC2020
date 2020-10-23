@@ -8,9 +8,6 @@
 #include <CL/cl.h>
 
 
-
-void READ(float** temp, int* dim);
-
 int
 main(
      int argc,
@@ -18,7 +15,7 @@ main(
 {
   // parse command line arguments
   size_t iter = 1;
-  float c = 0.01f;
+  double c = 0.01;
   if (argc >= 3) {
     if (argv[1][1] == 'n') {
 	iter = atoi(argv[1] + 2);
@@ -74,8 +71,8 @@ main(
 
   }
     //create temp matrix full of zeros
-    float* tempEntries = calloc((dim[0]+2)*(dim[1]+2), sizeof(float));
-    float** temp = (float**)malloc(sizeof(float*)*(dim[0]+2));
+    double* tempEntries = calloc((dim[0]+2)*(dim[1]+2), sizeof(double));
+    double** temp = malloc(sizeof(double*)*(dim[0]+2));
     for ( size_t ix = 0, jx = 0; ix <dim[0]+2; ++ix, jx+=dim[1]+2)
       temp[ix] = tempEntries + jx;
 
@@ -117,7 +114,7 @@ main(
 		k=2;
 		break;
 	      case 2:
-		temp[X+1][Y+1]= (float)(double)atof(dest);
+		temp[X+1][Y+1]= (double)atof(dest);
 		k=0;
 		break;
 	      }
@@ -169,18 +166,18 @@ main(
   int height = dim[0];
   int sz_with_padding = (width+2)*(height+2);
   
-  float* matrix_a = temp[0];
-  float* matrix_b = malloc(sizeof(float)*sz_with_padding);
+  double* matrix_a = temp[0];
+  double* matrix_b = malloc(sizeof(double)*sz_with_padding);
 
   // Create memory buffers on the device for each matrix 
-  cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_READ_WRITE, sz_with_padding*sizeof(float), NULL, &error);
-  cl_mem mem_matrix_b = clCreateBuffer(context, CL_MEM_READ_WRITE, sz_with_padding*sizeof(float), NULL, &error);
+  cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_READ_WRITE, sz_with_padding*sizeof(double), NULL, &error);
+  cl_mem mem_matrix_b = clCreateBuffer(context, CL_MEM_READ_WRITE, sz_with_padding*sizeof(double), NULL, &error);
 
   
 
   //    load data to buffers
-  error = clEnqueueWriteBuffer(command_queue, mem_matrix_a, CL_TRUE, 0,sz_with_padding*sizeof(float), matrix_a, 0, NULL, NULL);
-  error = clEnqueueWriteBuffer(command_queue, mem_matrix_b, CL_TRUE, 0,sz_with_padding*sizeof(float), matrix_b, 0, NULL, NULL);
+  error = clEnqueueWriteBuffer(command_queue, mem_matrix_a, CL_TRUE, 0,sz_with_padding*sizeof(double), matrix_a, 0, NULL, NULL);
+  error = clEnqueueWriteBuffer(command_queue, mem_matrix_b, CL_TRUE, 0,sz_with_padding*sizeof(double), matrix_b, 0, NULL, NULL);
   
   // ---Load the kernel source code into the array source_str----
   FILE *fp;
@@ -279,11 +276,11 @@ if (error != CL_SUCCESS)
   }
 
   // read results from buffer
-  float* result = malloc(sizeof(float)*sz_with_padding);
+  double* result = malloc(sizeof(double)*sz_with_padding);
   error = clEnqueueReadBuffer(command_queue,
 			      ix % 2 == 0 ? mem_matrix_a : mem_matrix_b,   // Test which is right
 			      CL_TRUE, 0,
-			      sz_with_padding*sizeof(float), result,
+			      sz_with_padding*sizeof(double), result,
 			      0, NULL, NULL);
 
   if (error != CL_SUCCESS)
@@ -295,7 +292,7 @@ if (error != CL_SUCCESS)
   // post proccessing
   //    Calculate average temp
   const size_t N = (width+2)*(height+2);
-  float averageT = 0;
+  double averageT = 0;
 
   for (size_t ix = 0; ix < N; ++ix)
     averageT += result[ix]; //its fine to add padding because it's 0
@@ -303,12 +300,12 @@ if (error != CL_SUCCESS)
 
   printf("%f\n", averageT);
   //    Calculate differance from average temp
-  float absAverageT = 0;
+  double absAverageT = 0;
   for (size_t ix = 0; ix < N; ++ix)
     {
       if ( ix > width+2  &&  ix % (width+2) != 0  &&  ix % (width+2) != (width+2)-1  &&  ix < ((height+2)-1)*(width+2) )
 	{
-	  float abs = result[ix] - averageT;
+	  double abs = result[ix] - averageT;
 	  absAverageT += abs < 0 ? -abs : abs;
 	}
     }
