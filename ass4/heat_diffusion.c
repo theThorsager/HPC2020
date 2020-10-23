@@ -1,4 +1,4 @@
-0;10;1c#include <stdio.h>
+#include <stdio.h>
 #include <string.h>
 
 #define MAX_SOURCE_SIZE (0x100000)
@@ -258,6 +258,8 @@ if (error != CL_SUCCESS)
   size_t local_item_size[2] = { 32, 32 }; // Divide work items into groups of 64
 
   const size_t offset[2] = {1, 1};
+
+  
   
   // Loop for number of iterations
   size_t ix;
@@ -266,7 +268,7 @@ if (error != CL_SUCCESS)
     error = clEnqueueNDRangeKernel(command_queue,
 				   ix % 2 == 0 ? kernelE : kernelO,
 				   2, offset,
-				   global_item_size, NULL,
+				   global_item_size, local_item_size,
 				   0, NULL, NULL);	   
   }
 
@@ -309,9 +311,9 @@ if (error != CL_SUCCESS)
   printf("%f\n", absAverageT);
   */
 //Testing: making results 2d
-  double ** a_result = malloc(sizeof(double)*(height+2));
-  for ( size_t ix = 0, jx = 0; ix < height+2; ++i, jx += width+2; )
-    a_results[ix] = result + jx;
+  float ** a_result = malloc(sizeof(float)*(height+2));
+  for ( size_t ix = 0, jx = 0; ix < height+2; ++ix, jx += width+2 )
+    a_result[ix] = result + jx;
   
     double absAverageT = 0;
 
@@ -321,10 +323,9 @@ if (error != CL_SUCCESS)
 	  double abs = a_result[ix][jx] - averageT;
 	  absAverageT += abs < 0 ? -abs : abs;
 	}
-    }
+    
   absAverageT /= width*height; // used to be N
   printf("%f\n", absAverageT);
-
   // end test
   
   
@@ -343,11 +344,12 @@ if (error != CL_SUCCESS)
   error = clReleaseContext(context);
 
   //free(source_str);
+  free(result);
   free(tempEntries);
   free(temp);
   //free(matrix_a);
   free(matrix_b);
-  free(result);
+  //  free(a_resulta_result);
   // Free more things
   
   return 0;

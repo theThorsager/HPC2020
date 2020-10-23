@@ -1,6 +1,6 @@
 CC = gcc
 BINS = heat_diffusion 
-CFLAGS = -O2 -lm -g -l OpenCL
+CFLAGS = -O2 -lm -g -l OpenCL -march=native
 
 .PHONY : all
 all : $(BINS)
