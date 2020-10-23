@@ -248,7 +248,7 @@ main(
   error = clSetKernelArg(kernelO,1,sizeof(cl_mem),(void*) &mem_matrix_a);
   error = clSetKernelArg(kernelO,0,sizeof(cl_mem),(void*) &mem_matrix_b);
   error = clSetKernelArg(kernelO,2,sizeof(c), &mem_c);
-  error = clSetKernelArg(kernelE,3,sizeof(width),  &mem_width);
+  error = clSetKernelArg(kernelO,3,sizeof(width),  &mem_width);
 
 if (error != CL_SUCCESS)
     {
