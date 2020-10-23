@@ -1,8 +1,8 @@
 
 __kernel void heatEq(
-__global double* h,
-__global double* nh,
-double c,
+__global float* h,
+__global float* nh,
+float c,
 int width,
 int height
 )
