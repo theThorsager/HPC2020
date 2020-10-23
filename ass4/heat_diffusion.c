@@ -167,7 +167,7 @@ main(
   int sz_with_padding = (width+2)*(height+2);
   
   double* matrix_a = temp[0];
-  double* matrix_b = malloc(sizeof(double)*sz_with_padding);
+  double* matrix_b = calloc(sizeof(double),sz_with_padding);
 
   // Create memory buffers on the device for each matrix 
   cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_READ_WRITE, sz_with_padding*sizeof(double), NULL, &error);
@@ -254,7 +254,7 @@ if (error != CL_SUCCESS)
     }
 
   // Execute the OpenCL kernel on the list
-  size_t global_item_size[2] = { height + 2, width + 2 }; // Process the entire lists
+  size_t global_item_size[2] = { height, width }; // Process the entire lists
   size_t local_item_size[2] = { 32, 32 }; // Divide work items into groups of 64
 
   const size_t offset[2] = {1, 1};
@@ -265,7 +265,7 @@ if (error != CL_SUCCESS)
     // execute kernel
     error = clEnqueueNDRangeKernel(command_queue,
 				   ix % 2 == 0 ? kernelE : kernelO,
-				   2, NULL,
+				   2, offset,
 				   global_item_size, NULL,
 				   0, NULL, NULL);	   
     if (error != CL_SUCCESS)
