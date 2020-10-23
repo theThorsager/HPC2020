@@ -255,7 +255,7 @@ if (error != CL_SUCCESS)
 
   // Execute the OpenCL kernel on the list
   size_t global_item_size[2] = { height, width }; // Process the entire lists
-  size_t local_item_size[2] = { 32, 32 }; // Divide work items into groups of 64
+  size_t local_item_size[2] = { 25, 25 }; // Divide work items into groups of 64
 
   const size_t offset[2] = {1, 1};
 
@@ -297,7 +297,7 @@ if (error != CL_SUCCESS)
 
   printf("%f\n", averageT);
   //    Calculate differance from average temp
-  /*
+
   double absAverageT = 0;
   for (size_t ix = 0; ix < N; ++ix)
     {
@@ -309,8 +309,9 @@ if (error != CL_SUCCESS)
     }
   absAverageT /= width*height; // used to be N
   printf("%f\n", absAverageT);
-  */
+  
 //Testing: making results 2d
+/*
   float ** a_result = malloc(sizeof(float)*(height+2));
   for ( size_t ix = 0, jx = 0; ix < height+2; ++ix, jx += width+2 )
     a_result[ix] = result + jx;
@@ -327,7 +328,7 @@ if (error != CL_SUCCESS)
   absAverageT /= width*height; // used to be N
   printf("%f\n", absAverageT);
   // end test
-  
+*/
   
   // Release Command Queue
   error = clFlush(command_queue);
@@ -349,7 +350,7 @@ if (error != CL_SUCCESS)
   free(temp);
   //free(matrix_a);
   free(matrix_b);
-  //  free(a_resulta_result);
+  //free(a_result);
   // Free more things
   
   return 0;
