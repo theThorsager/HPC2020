@@ -242,13 +242,13 @@ main(
   // Set arguments to kernel
   error = clSetKernelArg(kernelE,0,sizeof(cl_mem),(void*) &mem_matrix_a);
   error = clSetKernelArg(kernelE,1,sizeof(cl_mem),(void*) &mem_matrix_b);
-  error = clSetKernelArg(kernelE,2,sizeof(cl_float), (void*) &mem_c);
-  error = clSetKernelArg(kernelE,3,sizeof(cl_int), (void*) &mem_width);
+  error = clSetKernelArg(kernelE,2,sizeof(c), &mem_c);
+  error = clSetKernelArg(kernelE,3,sizeof(width), &mem_width);
 
   error = clSetKernelArg(kernelO,1,sizeof(cl_mem),(void*) &mem_matrix_a);
   error = clSetKernelArg(kernelO,0,sizeof(cl_mem),(void*) &mem_matrix_b);
-  error = clSetKernelArg(kernelO,2,sizeof(cl_float), (void*) &mem_c);
-  error = clSetKernelArg(kernelE,3,sizeof(cl_int), (void*) &mem_width);
+  error = clSetKernelArg(kernelO,2,sizeof(c), &mem_c);
+  error = clSetKernelArg(kernelE,3,sizeof(width),  &mem_width);
 
 if (error != CL_SUCCESS)
     {
@@ -269,7 +269,7 @@ if (error != CL_SUCCESS)
     error = clEnqueueNDRangeKernel(command_queue,
 				   ix % 2 == 0 ? kernelE : kernelO,
 				   2, offset,
-				   global_item_size, local_item_size,
+				   global_item_size, NULL,
 				   0, NULL, NULL);	   
     if (error != CL_SUCCESS)
     {
