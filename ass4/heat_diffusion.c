@@ -1,4 +1,4 @@
-#include <stdio.h>
+0;10;1c#include <stdio.h>
 #include <string.h>
 
 #define MAX_SOURCE_SIZE (0x100000)
@@ -295,6 +295,7 @@ if (error != CL_SUCCESS)
 
   printf("%f\n", averageT);
   //    Calculate differance from average temp
+  /*
   double absAverageT = 0;
   for (size_t ix = 0; ix < N; ++ix)
     {
@@ -306,6 +307,26 @@ if (error != CL_SUCCESS)
     }
   absAverageT /= width*height; // used to be N
   printf("%f\n", absAverageT);
+  */
+//Testing: making results 2d
+  double ** a_result = malloc(sizeof(double)*(height+2));
+  for ( size_t ix = 0, jx = 0; ix < height+2; ++i, jx += width+2; )
+    a_results[ix] = result + jx;
+  
+    double absAverageT = 0;
+
+    for ( size_t ix = 1; ix < height + 1; ++ix )
+      for ( size_t jx = 1; jx < width + 1; ++jx )
+	{
+	  double abs = a_result[ix][jx] - averageT;
+	  absAverageT += abs < 0 ? -abs : abs;
+	}
+    }
+  absAverageT /= width*height; // used to be N
+  printf("%f\n", absAverageT);
+
+  // end test
+  
   
   // Release Command Queue
   error = clFlush(command_queue);
