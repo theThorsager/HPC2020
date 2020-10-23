@@ -279,7 +279,7 @@ if (error != CL_SUCCESS)
   }
 
   // read results from buffer
-  float* result = malloc(sizeof(float)*width*height);
+  float* result = malloc(sizeof(float)*(width+2)*(height+2));
   error = clEnqueueReadBuffer(command_queue,
 			      ix % 2 == 0 ? mem_matrix_a : mem_matrix_b,   // Test which is right
 			      CL_TRUE, 0,
@@ -298,18 +298,21 @@ if (error != CL_SUCCESS)
   float averageT = 0;
 
   for (size_t ix = 0; ix < N; ++ix)
-    averageT += result[ix];
-  averageT /= N;
+    averageT += result[ix]; //its fine to add padding because it's 0
+  averageT /= width*height; // we don't want the average to include padding
 
   printf("%f\n", averageT);
   //    Calculate differance from average temp
   float absAverageT = 0;
   for (size_t ix = 0; ix < N; ++ix)
     {
-      float abs = result[ix] - averageT;
-      absAverageT += abs < 0 ? -abs : abs;
+      if ( ix > width  &&  ix % width != 0  &&  ix % width != width-1  &&  ix < (heigh-1)*width )
+	{
+	  float abs = result[ix] - averageT;
+	  absAverageT += abs < 0 ? -abs : abs;
+	}
     }
-  absAverageT /= N;
+  absAverageT /= width*height; // used to be N
   printf("%f\n", absAverageT);
   
   // Release Command Queue
