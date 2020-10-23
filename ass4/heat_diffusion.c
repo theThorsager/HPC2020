@@ -240,12 +240,14 @@ main(
   error = clSetKernelArg(kernelE,1,sizeof(cl_mem),(void*) &mem_matrix_b);
   error = clSetKernelArg(kernelE,2,sizeof(c), &c);
   error = clSetKernelArg(kernelE,3,sizeof(width), &width);
-
+  error = clSetKernelArg(kernelE,4,sizeof(height), &height);
+  
   error = clSetKernelArg(kernelO,1,sizeof(cl_mem),(void*) &mem_matrix_a);
   error = clSetKernelArg(kernelO,0,sizeof(cl_mem),(void*) &mem_matrix_b);
   error = clSetKernelArg(kernelO,2,sizeof(c), &c);
   error = clSetKernelArg(kernelO,3,sizeof(width),  &width);
-
+  error = clSetKernelArg(kernelO,4,sizeof(height), &width);
+  
 if (error != CL_SUCCESS)
     {
       printf("Failed to set the arguments, error code: %d\n", error);
