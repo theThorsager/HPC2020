@@ -184,7 +184,7 @@ main(
   error = clEnqueueWriteBuffer(command_queue, mem_matrix_a, CL_TRUE, 0,sz_with_padding*sizeof(float), matrix_a, 0, NULL, NULL);
   error = clEnqueueWriteBuffer(command_queue, mem_matrix_b, CL_TRUE, 0,sz_with_padding*sizeof(float), matrix_b, 0, NULL, NULL);
   error = clEnqueueWriteBuffer(command_queue, mem_c, CL_TRUE, 0, sizeof(float), &c, 0, NULL, NULL);
-  error = clEnqueueWriteBuffer(command_queue, mem_width,CL_TRUE,0,sizeof(int), &width,0 NULL, NULL);
+  error = clEnqueueWriteBuffer(command_queue, mem_width,CL_TRUE,0,sizeof(int), &width,0, NULL, NULL);
   error=clEnqueueWriteBuffer(command_queue, mem_height,CL_TRUE,0, sizeof(int), &height,0,NULL,NULL);
   
   // ---Load the kernel source code into the array source_str----
