@@ -165,8 +165,8 @@ main(
   }
 
   //Load things into buffers
-  int width = dim[0];
-  int height = dim[1];
+  int width = dim[1];
+  int height = dim[0];
   int sz_with_padding = (width+2)*(height+2);
   
   float* matrix_a = temp[0];
@@ -184,8 +184,7 @@ main(
   error = clEnqueueWriteBuffer(command_queue, mem_matrix_a, CL_TRUE, 0,sz_with_padding*sizeof(float), matrix_a, 0, NULL, NULL);
   error = clEnqueueWriteBuffer(command_queue, mem_matrix_b, CL_TRUE, 0,sz_with_padding*sizeof(float), matrix_b, 0, NULL, NULL);
   error = clEnqueueWriteBuffer(command_queue, mem_c, CL_TRUE, 0, sizeof(float), &c, 0, NULL, NULL);
-  error = clEnqueueWriteBuffer(command_queue, mem_width,CL_TRUE,0,sizeof(int), &width,0, NULL, NULL);
-  error=clEnqueueWriteBuffer(command_queue, mem_height,CL_TRUE,0, sizeof(int), &height,0,NULL,NULL);
+  error = clEnqueueWriteBuffer(command_queue, mem_width, CL_TRUE, 0, sizeof(int), &width,0, NULL, NULL);
   
   // ---Load the kernel source code into the array source_str----
   FILE *fp;
@@ -232,8 +231,8 @@ main(
   
   
   // Create the OpenCL kernel
-  cl_kernel kernelE = clCreateKernel(program, "heat_diffusion", &error);
-  cl_kernel kernelO = clCreateKernel(program, "heat_diffusion", &error);
+  cl_kernel kernelE = clCreateKernel(program, "heatEq", &error);
+  cl_kernel kernelO = clCreateKernel(program, "heatEq", &error);
   if (error != CL_SUCCESS)
     {
       printf("Failed to create the kernel, error code: %d\n", error);
@@ -241,13 +240,15 @@ main(
     }
  
   // Set arguments to kernel
-  error = clSetKernelArg(kernelE,0,sizeof(matrix_a),(void*) &mem_matrix_a);
-  error = clSetKernelArg(kernelE,1,sizeof(matrix_b),(void*) &mem_matrix_b);
-  error = clSetKernelArg(kernelE,2,sizeof(float), (void*) &mem_c);
+  error = clSetKernelArg(kernelE,0,sizeof(cl_mem),(void*) &mem_matrix_a);
+  error = clSetKernelArg(kernelE,1,sizeof(cl_mem),(void*) &mem_matrix_b);
+  error = clSetKernelArg(kernelE,2,sizeof(cl_float), (void*) &mem_c);
+  error = clSetKernelArg(kernelE,3,sizeof(cl_int), (void*) &mem_width);
 
-  error = clSetKernelArg(kernelO,1,sizeof(matrix_a),(void*) &mem_matrix_a);
-  error = clSetKernelArg(kernelO,0,sizeof(matrix_b),(void*) &mem_matrix_b);
-  error = clSetKernelArg(kernelO,2,sizeof(float), (void*) &mem_c);
+  error = clSetKernelArg(kernelO,1,sizeof(cl_mem),(void*) &mem_matrix_a);
+  error = clSetKernelArg(kernelO,0,sizeof(cl_mem),(void*) &mem_matrix_b);
+  error = clSetKernelArg(kernelO,2,sizeof(cl_float), (void*) &mem_c);
+  error = clSetKernelArg(kernelE,3,sizeof(cl_int), (void*) &mem_width);
 
 if (error != CL_SUCCESS)
     {
