@@ -175,16 +175,12 @@ main(
   // Create memory buffers on the device for each matrix 
   cl_mem mem_matrix_a = clCreateBuffer(context, CL_MEM_READ_WRITE, sz_with_padding*sizeof(float), NULL, &error);
   cl_mem mem_matrix_b = clCreateBuffer(context, CL_MEM_READ_WRITE, sz_with_padding*sizeof(float), NULL, &error);
-  cl_mem mem_c = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float), NULL, &error);
-  cl_mem mem_width=clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, &error);
-  cl_mem mem_height=clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(int), NULL, &error);
+
   
 
   //    load data to buffers
   error = clEnqueueWriteBuffer(command_queue, mem_matrix_a, CL_TRUE, 0,sz_with_padding*sizeof(float), matrix_a, 0, NULL, NULL);
   error = clEnqueueWriteBuffer(command_queue, mem_matrix_b, CL_TRUE, 0,sz_with_padding*sizeof(float), matrix_b, 0, NULL, NULL);
-  error = clEnqueueWriteBuffer(command_queue, mem_c, CL_TRUE, 0, sizeof(float), &c, 0, NULL, NULL);
-  error = clEnqueueWriteBuffer(command_queue, mem_width, CL_TRUE, 0, sizeof(int), &width,0, NULL, NULL);
   
   // ---Load the kernel source code into the array source_str----
   FILE *fp;
@@ -242,13 +238,13 @@ main(
   // Set arguments to kernel
   error = clSetKernelArg(kernelE,0,sizeof(cl_mem),(void*) &mem_matrix_a);
   error = clSetKernelArg(kernelE,1,sizeof(cl_mem),(void*) &mem_matrix_b);
-  error = clSetKernelArg(kernelE,2,sizeof(c), &mem_c);
-  error = clSetKernelArg(kernelE,3,sizeof(width), &mem_width);
+  error = clSetKernelArg(kernelE,2,sizeof(c), &c);
+  error = clSetKernelArg(kernelE,3,sizeof(width), &width);
 
   error = clSetKernelArg(kernelO,1,sizeof(cl_mem),(void*) &mem_matrix_a);
   error = clSetKernelArg(kernelO,0,sizeof(cl_mem),(void*) &mem_matrix_b);
-  error = clSetKernelArg(kernelO,2,sizeof(c), &mem_c);
-  error = clSetKernelArg(kernelO,3,sizeof(width),  &mem_width);
+  error = clSetKernelArg(kernelO,2,sizeof(c), &c);
+  error = clSetKernelArg(kernelO,3,sizeof(width),  &width);
 
 if (error != CL_SUCCESS)
     {
@@ -257,7 +253,7 @@ if (error != CL_SUCCESS)
     }
 
   // Execute the OpenCL kernel on the list
-  size_t global_item_size[2] = { dim[0], dim[1] }; // Process the entire lists
+  size_t global_item_size[2] = { height, width }; // Process the entire lists
   size_t local_item_size[2] = { 32, 32 }; // Divide work items into groups of 64
 
   const size_t offset[2] = {1, 1};
@@ -279,11 +275,11 @@ if (error != CL_SUCCESS)
   }
 
   // read results from buffer
-  float* result = malloc(sizeof(float)*(width+2)*(height+2));
+  float* result = malloc(sizeof(float)*sz_with_padding);
   error = clEnqueueReadBuffer(command_queue,
 			      ix % 2 == 0 ? mem_matrix_a : mem_matrix_b,   // Test which is right
 			      CL_TRUE, 0,
-			      width*height * sizeof(float), result,
+			      sz_with_padding*sizeof(float), result,
 			      0, NULL, NULL);
 
   if (error != CL_SUCCESS)
@@ -322,7 +318,6 @@ if (error != CL_SUCCESS)
   error = clReleaseKernel(kernelO);
   error = clReleaseMemObject(mem_matrix_a);
   error = clReleaseMemObject(mem_matrix_b);
-  error = clReleaseMemObject(mem_c);
   error = clReleaseCommandQueue(command_queue);
   //Release program
   error = clReleaseProgram(program);
