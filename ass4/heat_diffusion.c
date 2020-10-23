@@ -306,7 +306,7 @@ if (error != CL_SUCCESS)
   float absAverageT = 0;
   for (size_t ix = 0; ix < N; ++ix)
     {
-      if ( ix > width  &&  ix % width != 0  &&  ix % width != width-1  &&  ix < (heigh-1)*width )
+      if ( ix > width  &&  ix % width != 0  &&  ix % width != width-1  &&  ix < (height-1)*width )
 	{
 	  float abs = result[ix] - averageT;
 	  absAverageT += abs < 0 ? -abs : abs;
